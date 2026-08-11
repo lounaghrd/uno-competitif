@@ -1,0 +1,465 @@
+<title>UNO Compétitif — Analyse de la ligue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    color-scheme: light dark;
+    /* --- warm score-sheet neutrals (light) --- */
+    --bg:        #f7f5ef;
+    --surface:   #fffefb;
+    --surface-2: #f0ede3;
+    --line:      #e2ddcf;
+    --line-2:    #cfc9b8;
+    --ink:       #201d16;
+    --ink-2:     #5c574a;
+    --ink-3:     #8b8574;
+    --accent:    #d1392b;   /* uno red — structural emphasis only */
+    --accent-ink:#fff;
+    --good:      #1f9d63;
+    --warn:      #c98500;
+    /* --- player identities (validated categorical, light steps) --- */
+    --p-nathan:  #2a78d6;
+    --p-louna:   #eb6834;
+    --p-andy:    #1baf7a;
+    --p-julia:   #b98100;
+    --p-justin:  #e87ba4;
+    --shadow: 0 1px 2px rgba(30,26,15,.05), 0 8px 24px -12px rgba(30,26,15,.18);
+  }
+  :root:not([data-theme="light"]){ @media (prefers-color-scheme: dark){
+    --bg:        #14130d;
+    --surface:   #1e1c14;
+    --surface-2: #26241a;
+    --line:      #322f22;
+    --line-2:    #423e2d;
+    --ink:       #f4f1e6;
+    --ink-2:     #b8b3a2;
+    --ink-3:     #837e6d;
+    --accent:    #f0503f;
+    --accent-ink:#1a0d0a;
+    --good:      #45c789;
+    --warn:      #e0a63a;
+    --p-nathan:  #3987e5;
+    --p-louna:   #e8703b;
+    --p-andy:    #22c78d;
+    --p-julia:   #e0aa2e;
+    --p-justin:  #ec8fb2;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }}
+  :root[data-theme="dark"]{
+    --bg:        #14130d;
+    --surface:   #1e1c14;
+    --surface-2: #26241a;
+    --line:      #322f22;
+    --line-2:    #423e2d;
+    --ink:       #f4f1e6;
+    --ink-2:     #b8b3a2;
+    --ink-3:     #837e6d;
+    --accent:    #f0503f;
+    --accent-ink:#1a0d0a;
+    --good:      #45c789;
+    --warn:      #e0a63a;
+    --p-nathan:  #3987e5;
+    --p-louna:   #e8703b;
+    --p-andy:    #22c78d;
+    --p-julia:   #e0aa2e;
+    --p-justin:  #ec8fb2;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:clamp(20px,4vw,52px) clamp(16px,4vw,40px) 80px}
+  .num{font-variant-numeric: tabular-nums; letter-spacing:-.01em}
+
+  /* ---------- header ---------- */
+  header{display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; margin-bottom:clamp(28px,5vw,52px)}
+  .eyebrow{font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--accent)}
+  h1{
+    font-size:clamp(38px,8vw,76px); line-height:.92; margin:.18em 0 0; font-weight:850;
+    letter-spacing:-.03em; text-wrap:balance;
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  h1 .u{color:var(--accent)}
+  .sub{color:var(--ink-2); font-size:clamp(15px,2vw,17px); margin-top:.5em; max-width:52ch}
+  .toggle{
+    flex:none; background:var(--surface); color:var(--ink-2); border:1px solid var(--line-2);
+    border-radius:999px; padding:8px 14px; font:inherit; font-size:13px; font-weight:600; cursor:pointer;
+    display:inline-flex; gap:7px; align-items:center;
+  }
+  .toggle:hover{border-color:var(--ink-3); color:var(--ink)}
+  .toggle:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  section{margin-top:clamp(40px,7vw,72px)}
+  .sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:22px}
+  .sec-head .n{font-size:13px; font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums}
+  h2{font-size:clamp(21px,3.4vw,28px); font-weight:800; letter-spacing:-.02em; margin:0; text-wrap:balance}
+  .sec-sub{color:var(--ink-2); font-size:15px; margin:6px 0 0; max-width:64ch}
+
+  /* ---------- standings ---------- */
+  .board{display:flex; flex-direction:column; gap:10px}
+  .row{
+    display:grid; grid-template-columns:44px 1fr auto; align-items:center; gap:16px;
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:14px 18px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+  }
+  .row::before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--pc)}
+  .row.lead{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+  .rank{font-size:24px; font-weight:850; color:var(--ink-3); text-align:center; font-variant-numeric:tabular-nums}
+  .row.lead .rank{color:var(--accent)}
+  .who{display:flex; flex-direction:column; gap:3px; min-width:0}
+  .who .nm{font-weight:750; font-size:18px; display:flex; align-items:center; gap:9px}
+  .dot{width:11px; height:11px; border-radius:50%; background:var(--pc); flex:none}
+  .who .tag{font-size:12.5px; color:var(--ink-2)}
+  .tot{text-align:right}
+  .tot .big{font-size:30px; font-weight:850; letter-spacing:-.02em; line-height:1}
+  .tot .lbl{font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em}
+  .gapbar{grid-column:1/-1; height:6px; border-radius:4px; background:var(--surface-2); overflow:hidden; margin-top:2px}
+  .gapbar>i{display:block; height:100%; background:var(--pc); border-radius:4px}
+
+  /* ---------- insight cards ---------- */
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:var(--shadow)}
+  .card .kick{font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--pc)}
+  .card h3{margin:.35em 0 .5em; font-size:19px; font-weight:800; letter-spacing:-.01em}
+  .card p{margin:0; color:var(--ink-2); font-size:14.5px}
+  .card .stat{font-weight:750; color:var(--ink)}
+
+  /* ---------- chart ---------- */
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:clamp(16px,3vw,26px); box-shadow:var(--shadow)}
+  .legend{display:flex; flex-wrap:wrap; gap:14px 20px; margin-bottom:14px}
+  .lg{display:inline-flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--ink-2); cursor:pointer; user-select:none; border:none; background:none; font-family:inherit; padding:2px 0}
+  .lg .sw{width:22px; height:4px; border-radius:2px; background:var(--pc); flex:none}
+  .lg.off{opacity:.32}
+  .lg.off .sw{background:var(--ink-3)}
+  .chart-scroll{overflow-x:auto; margin:0 -6px; padding:0 6px}
+  svg{display:block; width:100%; height:auto; overflow:visible}
+  .axis{stroke:var(--line-2); stroke-width:1}
+  .grid{stroke:var(--line); stroke-width:1}
+  .tk{fill:var(--ink-3); font-size:11px; font-variant-numeric:tabular-nums}
+  .pline{fill:none; stroke-width:2.4; stroke-linejoin:round; stroke-linecap:round; transition:opacity .18s}
+  .plabel{font-size:12px; font-weight:750; font-variant-numeric:tabular-nums}
+  .crosshair{stroke:var(--ink-3); stroke-width:1; stroke-dasharray:3 3; opacity:0}
+  .tipdot{opacity:0}
+  .tooltip{position:absolute; pointer-events:none; background:var(--surface); border:1px solid var(--line-2);
+    border-radius:10px; padding:10px 12px; box-shadow:var(--shadow); font-size:13px; opacity:0; transition:opacity .12s; z-index:5; min-width:150px}
+  .tooltip .th{font-weight:750; font-size:12px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px}
+  .tooltip .tr{display:flex; justify-content:space-between; gap:14px; align-items:center; padding:1.5px 0}
+  .tooltip .tr .nm{display:flex; align-items:center; gap:7px; color:var(--ink-2)}
+  .tooltip .tr .vv{font-weight:750; color:var(--ink); font-variant-numeric:tabular-nums}
+  .tooltip .sw{width:9px; height:9px; border-radius:50%; background:var(--pc)}
+
+  /* ---------- stat table ---------- */
+  .tbl-scroll{overflow-x:auto}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:620px}
+  thead th{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); font-weight:700; text-align:right; padding:0 0 10px; border-bottom:2px solid var(--line-2)}
+  thead th:first-child{text-align:left}
+  tbody td{padding:12px 0; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums}
+  tbody td:first-child{text-align:left; font-weight:700}
+  tbody tr:last-child td{border-bottom:none}
+  .pname{display:inline-flex; align-items:center; gap:9px}
+  .mbar{display:inline-block; height:7px; border-radius:4px; background:var(--pc); vertical-align:middle; margin-left:8px}
+  .best{color:var(--good); font-weight:750}
+  .worstc{color:var(--accent); font-weight:750}
+
+  /* ---------- note ---------- */
+  .note{border:1px solid var(--line-2); border-left:4px solid var(--warn); background:var(--surface); border-radius:0 14px 14px 0; padding:20px 22px; box-shadow:var(--shadow)}
+  .note h3{margin:0 0 .4em; font-size:18px; font-weight:800}
+  .note p{margin:.5em 0; color:var(--ink-2); font-size:14.5px}
+  .note strong{color:var(--ink)}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  .miniorder{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .seat{display:inline-flex; align-items:center; gap:7px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:5px 11px 5px 8px; font-size:13px; font-weight:600}
+  .seat .s{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--pc);color:#fff;font-size:11px;font-weight:800;flex:none}
+
+  footer{margin-top:64px; padding-top:22px; border-top:1px solid var(--line); color:var(--ink-3); font-size:13px}
+  .kbd{font-family:ui-monospace,monospace; background:var(--surface-2); border:1px solid var(--line-2); border-radius:5px; padding:1px 6px; font-size:12px; color:var(--ink-2)}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Ligue privée · 23 manches · saison en cours</div>
+      <h1><span class="u">UNO</span> Compétitif</h1>
+      <p class="sub">Ce que 23 manches racontent sur 5 joueurs — qui gagne, qui explose, et pourquoi le meilleur n'est pas celui qui remporte le plus de manches. <strong>Moins de points = meilleur classement.</strong></p>
+    </div>
+    <button class="toggle" id="themeBtn" aria-label="Changer de thème">🌙 Thème</button>
+  </header>
+
+  <!-- STANDINGS -->
+  <section id="standings" style="margin-top:8px">
+    <div class="sec-head"><span class="n">01</span><div><h2>Le classement</h2><p class="sec-sub">Total de points cumulés sur les 23 manches. La barre montre l'écart avec le leader.</p></div></div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section id="insights">
+    <div class="sec-head"><span class="n">02</span><div><h2>Ce que racontent les chiffres</h2><p class="sec-sub">Gagner des manches compte moins que ne jamais exploser.</p></div></div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <!-- RACE -->
+  <section id="race">
+    <div class="sec-head"><span class="n">03</span><div><h2>La course, manche après manche</h2><p class="sec-sub">Points cumulés. La ligne la plus basse est en tête. Survole pour lire les positions à chaque manche · clique une légende pour isoler.</p></div></div>
+    <div class="panel">
+      <div class="legend" id="legend"></div>
+      <div class="chart-scroll" style="position:relative">
+        <div class="tooltip" id="tip"></div>
+        <svg id="race-svg" viewBox="0 0 900 440" role="img" aria-label="Points cumulés par manche pour chaque joueur"></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFILES -->
+  <section id="profiles">
+    <div class="sec-head"><span class="n">04</span><div><h2>Le profil de chacun</h2><p class="sec-sub">Trié par total. <em>Moy. en défaite</em> = régularité (points encaissés quand on ne gagne pas) · <em>Volatilité</em> = écart-type (plus c'est haut, plus le joueur alterne cartons et catastrophes).</p></div></div>
+    <div class="panel"><div class="tbl-scroll"><table id="stats">
+      <thead><tr>
+        <th>Joueur</th><th>Total</th><th>Moy./manche</th><th>Victoires</th><th>Moy. en défaite</th><th>Volatilité</th><th>Pire manche</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div></div>
+  </section>
+
+  <!-- WINS -->
+  <section id="wins">
+    <div class="sec-head"><span class="n">05</span><div><h2>Répartition des victoires</h2><p class="sec-sub">Une seule manche a été gagnée en coupant le dernier pli (le <strong>−20</strong> de Justin, manche 15).</p></div></div>
+    <div class="panel"><svg id="wins-svg" viewBox="0 0 900 260" role="img" aria-label="Nombre de victoires par joueur"></svg></div>
+  </section>
+
+  <!-- BLIND SPOT -->
+  <section id="blindspot">
+    <div class="sec-head"><span class="n">06</span><div><h2>L'angle mort de vos données</h2><p class="sec-sub">Vous notez l'ordre de jeu pour l'analyser — mais il ne bouge quasiment jamais.</p></div></div>
+    <div class="grid2">
+      <div class="note">
+        <h3>La position ne varie pas → impossible à analyser</h3>
+        <p>Sur 23 manches, l'ordre est resté <strong>fixe à une exception près</strong> : Nathan toujours 1<sup>er</sup>, Louna 2<sup>e</sup>, Julia 3<sup>e</sup>. Andy et Justin n'ont échangé leurs sièges (4/5) que sur les 3 dernières manches.</p>
+        <p>Résultat : on ne peut pas dire si « être 1<sup>er</sup> à jouer » est un avantage, parce que <strong>c'est toujours la même personne</strong> à cette place. L'effet position et l'effet joueur sont confondus.</p>
+        <div class="miniorder" id="seats"></div>
+      </div>
+      <div class="note" style="border-left-color:var(--good)">
+        <h3>Comment débloquer cette analyse</h3>
+        <p><strong>Tirez les places au sort à chaque manche.</strong> Une fois que chaque joueur aura occupé chaque siège un nombre comparable de fois, la moyenne par position deviendra lisible.</p>
+        <p><strong>Notez qui distribue</strong> (le donneur tourne-t-il ?) et le <strong>nombre de joueurs</strong> de la manche : à 7 joueurs, une victoire vaut mécaniquement plus qu'à 5.</p>
+        <p>Pensez à ajouter une colonne <strong>date</strong> pour distinguer une soirée d'une autre, et repérer les tendances de forme.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Analyse générée à partir de votre Google Sheet · 5 joueurs, 23 manches · une victoire = −10 pts (−20 si le dernier pli est coupé).
+    <br>Astuce&nbsp;: appuyez sur <span class="kbd">T</span> pour basculer le thème.
+  </footer>
+</div>
+
+<script>
+const PLAYERS = [
+  {key:"nathan", name:"Nathan", rounds:[15,19,31,14,19,7,64,24,14,-10,101,27,16,25,8,20,8,19,28,24,1,3,6]},
+  {key:"louna",  name:"Louna",  rounds:[46,-10,10,0,17,39,2,-10,15,19,-10,11,4,52,13,31,-10,12,24,-10,84,-10,11]},
+  {key:"andy",   name:"Andy",   rounds:[21,18,26,8,21,33,-10,4,-10,21,9,-10,6,11,32,14,24,-10,64,53,-10,16,70]},
+  {key:"julia",  name:"Julia",  rounds:[2,2,-10,26,-10,11,14,17,91,20,1,51,27,-10,102,-10,26,0,19,60,58,19,-10]},
+  {key:"justin", name:"Justin", rounds:[-10,42,23,-10,34,-10,6,12,37,3,3,123,-10,8,-20,3,12,4,-10,30,60,16,22]},
+];
+const N = PLAYERS[0].rounds.length;
+const col = k => getComputedStyle(document.documentElement).getPropertyValue('--p-'+k).trim();
+
+// derive stats + cumulative
+PLAYERS.forEach(p=>{
+  let c=0; p.cum=[0];
+  p.rounds.forEach(r=>{c+=r; p.cum.push(c);});
+  p.total=c;
+  p.avg=c/N;
+  const losses=p.rounds.filter(x=>x>=0);
+  p.wins=p.rounds.filter(x=>x<0).length;
+  p.n20=p.rounds.filter(x=>x===-20).length;
+  p.moyDef=losses.reduce((a,b)=>a+b,0)/losses.length;
+  const m=p.avg; p.sd=Math.sqrt(p.rounds.reduce((a,b)=>a+(b-m)**2,0)/N);
+  p.worst=Math.max(...p.rounds);
+});
+const ranked=[...PLAYERS].sort((a,b)=>a.total-b.total);
+const leader=ranked[0];
+
+/* ---------- STANDINGS ---------- */
+const tags={nathan:"1 victoire — l'increvable",louna:"6 victoires — la régularité",andy:"5 victoires — solide",julia:"5 victoires — tout ou rien",justin:"6 victoires — le flambeur"};
+const maxTotal=Math.max(...PLAYERS.map(p=>p.total));
+document.getElementById('board').innerHTML=ranked.map((p,i)=>`
+  <div class="row ${i===0?'lead':''}" style="--pc:var(--p-${p.key})">
+    <div class="rank">${i+1}</div>
+    <div class="who"><span class="nm"><span class="dot"></span>${p.name}</span><span class="tag">${tags[p.key]}</span></div>
+    <div class="tot"><div class="big num">${p.total}</div><div class="lbl">points</div></div>
+    <div class="gapbar"><i style="width:${(p.total/maxTotal*100).toFixed(1)}%"></i></div>
+  </div>`).join('');
+
+/* ---------- INSIGHT CARDS ---------- */
+const julia=PLAYERS.find(p=>p.key==='julia');
+const nathan=PLAYERS.find(p=>p.key==='nathan');
+const justin=PLAYERS.find(p=>p.key==='justin');
+const cards=[
+  {key:'julia',kick:'Le paradoxe',h:'Julia gagne… et finit dernière',
+   b:`<span class="stat">5 victoires</span>, autant qu'Andy — mais <span class="stat">dernière au total (${julia.total})</span>. Ses manches perdues coûtent cher : moyenne de <span class="stat">${julia.moyDef.toFixed(0)} pts</span> et deux cartons à 91 et 102. Elle joue en tout-ou-rien.`},
+  {key:'nathan',kick:'Le contre-exemple',h:'Nathan survit sans gagner',
+   b:`<span class="stat">1 seule victoire</span> en 23 manches, et pourtant <span class="stat">4<sup>e</sup>, pas dernier</span>. Sa moyenne en défaite (<span class="stat">${nathan.moyDef.toFixed(0)} pts</span>) est la plus basse du groupe : il encaisse peu, tout le temps.`},
+  {key:'justin',kick:'Le pari',h:'Justin, le plus explosif',
+   b:`Le seul <span class="stat">−20</span> de la saison, mais aussi la pire manche jamais notée (<span class="stat">123 pts</span>) et la 2<sup>e</sup> plus forte volatilité. Quand ça passe, ça rapporte ; quand ça casse…`},
+  {key:'louna',kick:'La leader',h:'Louna : gagner ET limiter la casse',
+   b:`<span class="stat">6 victoires</span> et un total de <span class="stat">${leader.total}</span>, en tête. Elle combine le meilleur des deux mondes : elle remporte des manches sans jamais s'effondrer sur les autres.`},
+];
+document.getElementById('cards').innerHTML=cards.map(c=>`
+  <div class="card" style="--pc:var(--p-${c.key})">
+    <div class="kick">${c.kick}</div><h3>${c.h}</h3><p>${c.b}</p>
+  </div>`).join('');
+
+/* ---------- STATS TABLE ---------- */
+const minDef=Math.min(...PLAYERS.map(p=>p.moyDef));
+const maxWorst=Math.max(...PLAYERS.map(p=>p.worst));
+const maxSd=Math.max(...PLAYERS.map(p=>p.sd));
+document.querySelector('#stats tbody').innerHTML=ranked.map(p=>`
+  <tr>
+    <td><span class="pname" style="--pc:var(--p-${p.key})"><span class="dot"></span>${p.name}</span></td>
+    <td class="num" style="font-weight:750">${p.total}</td>
+    <td class="num">${p.avg.toFixed(1)}</td>
+    <td class="num">${p.wins}${p.n20?` <span style="color:var(--accent)">(−20)</span>`:''}</td>
+    <td class="num ${p.moyDef===minDef?'best':''}">${p.moyDef.toFixed(1)}<span class="mbar" style="width:${(p.moyDef/40*46).toFixed(0)}px"></span></td>
+    <td class="num ${p.sd===maxSd?'worstc':''}">${p.sd.toFixed(1)}</td>
+    <td class="num ${p.worst===maxWorst?'worstc':''}">${p.worst}</td>
+  </tr>`).join('');
+
+/* ---------- SEATS ---------- */
+const seatOrder=[["Nathan",1,"nathan"],["Louna",2,"louna"],["Julia",3,"julia"],["Justin",4,"justin"],["Andy",5,"andy"]];
+document.getElementById('seats').innerHTML=seatOrder.map(([n,s,k])=>`
+  <span class="seat" style="--pc:var(--p-${k})"><span class="s">${s}</span>${n}</span>`).join('')
+  +`<span class="seat" style="--pc:var(--ink-3);opacity:.85"><span class="s">↔</span>Andy&Justin échangent (m.21-23)</span>`;
+
+/* ---------- RACE LINE CHART ---------- */
+const RS={w:900,h:440,l:44,r:78,t:16,b:34};
+const svg=document.getElementById('race-svg');
+const tip=document.getElementById('tip');
+const yMax=Math.max(...PLAYERS.map(p=>Math.max(...p.cum)));
+const yMin=Math.min(...PLAYERS.map(p=>Math.min(...p.cum)));
+const y0=Math.floor((yMin-10)/50)*50, y1=Math.ceil((yMax+10)/50)*50;
+const X=i=>RS.l+(i/(N))*(RS.w-RS.l-RS.r);
+const Y=v=>RS.t+(1-(v-y0)/(y1-y0))*(RS.h-RS.t-RS.b);
+let hidden={};
+function drawRace(){
+  const NS="http://www.w3.org/2000/svg";
+  svg.innerHTML="";
+  // grid + y ticks
+  for(let v=y0; v<=y1; v+=50){
+    const gy=Y(v);
+    const l=document.createElementNS(NS,"line");
+    l.setAttribute("class","grid"); l.setAttribute("x1",RS.l); l.setAttribute("x2",RS.w-RS.r);
+    l.setAttribute("y1",gy); l.setAttribute("y2",gy); svg.appendChild(l);
+    const t=document.createElementNS(NS,"text");
+    t.setAttribute("class","tk"); t.setAttribute("x",RS.l-8); t.setAttribute("y",gy+4);
+    t.setAttribute("text-anchor","end"); t.textContent=v; svg.appendChild(t);
+  }
+  // x ticks (every ~4)
+  for(let i=0;i<=N;i+=4){
+    const t=document.createElementNS(NS,"text");
+    t.setAttribute("class","tk"); t.setAttribute("x",X(i)); t.setAttribute("y",RS.h-8);
+    t.setAttribute("text-anchor","middle"); t.textContent=i===0?"début":"m."+i; svg.appendChild(t);
+  }
+  // lines
+  const active=ranked.filter(p=>!hidden[p.key]);
+  PLAYERS.forEach(p=>{
+    if(hidden[p.key]) return;
+    const d=p.cum.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    const path=document.createElementNS(NS,"path");
+    path.setAttribute("class","pline"); path.setAttribute("d",d);
+    path.setAttribute("stroke",col(p.key)); svg.appendChild(path);
+    // end label with rank
+    const rk=ranked.findIndex(r=>r.key===p.key)+1;
+    const t=document.createElementNS(NS,"text");
+    t.setAttribute("class","plabel"); t.setAttribute("x",X(N)+8); t.setAttribute("y",Y(p.cum[N])+4);
+    t.setAttribute("fill",col(p.key)); t.textContent=`${p.name} ${p.total}`;
+    svg.appendChild(t);
+  });
+  // crosshair + dots
+  const cross=document.createElementNS(NS,"line");
+  cross.setAttribute("class","crosshair"); cross.setAttribute("id","cross");
+  cross.setAttribute("y1",RS.t); cross.setAttribute("y2",RS.h-RS.b); svg.appendChild(cross);
+  PLAYERS.forEach(p=>{
+    if(hidden[p.key])return;
+    const c=document.createElementNS(NS,"circle");
+    c.setAttribute("class","tipdot"); c.setAttribute("r",4.5);
+    c.setAttribute("fill",col(p.key)); c.setAttribute("stroke","var(--surface)"); c.setAttribute("stroke-width",2);
+    c.dataset.key=p.key; svg.appendChild(c);
+  });
+}
+function raceHover(evt){
+  const pt=svg.getBoundingClientRect();
+  const sx=(evt.clientX-pt.left)/pt.width*RS.w;
+  let i=Math.round(((sx-RS.l)/(RS.w-RS.l-RS.r))*N);
+  i=Math.max(0,Math.min(N,i));
+  const cross=document.getElementById('cross');
+  cross.setAttribute("x1",X(i)); cross.setAttribute("x2",X(i)); cross.style.opacity=1;
+  const rows=PLAYERS.filter(p=>!hidden[p.key]).map(p=>({p,v:p.cum[i]})).sort((a,b)=>a.v-b.v);
+  svg.querySelectorAll('.tipdot').forEach(d=>{
+    const p=PLAYERS.find(x=>x.key===d.dataset.key);
+    d.setAttribute("cx",X(i)); d.setAttribute("cy",Y(p.cum[i])); d.style.opacity=1;
+  });
+  tip.innerHTML=`<div class="th">${i===0?'Avant la 1re manche':'Après manche '+i}</div>`+
+    rows.map(({p,v})=>`<div class="tr"><span class="nm"><span class="sw" style="background:var(--p-${p.key})"></span>${p.name}</span><span class="vv">${v}</span></div>`).join('');
+  tip.style.opacity=1;
+  const px=X(i)/RS.w*pt.width;
+  tip.style.left=Math.min(px+14, pt.width-tip.offsetWidth-4)+"px";
+  tip.style.top="10px";
+}
+svg.addEventListener('mousemove',raceHover);
+svg.addEventListener('mouseleave',()=>{tip.style.opacity=0;const c=document.getElementById('cross');if(c)c.style.opacity=0;svg.querySelectorAll('.tipdot').forEach(d=>d.style.opacity=0);});
+
+/* legend */
+document.getElementById('legend').innerHTML=ranked.map(p=>`
+  <button class="lg" data-key="${p.key}" style="--pc:var(--p-${p.key})"><span class="sw"></span>${p.name}</button>`).join('');
+document.querySelectorAll('.lg').forEach(b=>b.addEventListener('click',()=>{
+  const k=b.dataset.key; hidden[k]=!hidden[k]; b.classList.toggle('off',hidden[k]); drawRace();
+}));
+
+/* ---------- WINS BAR CHART ---------- */
+function drawWins(){
+  const NS="http://www.w3.org/2000/svg", W={w:900,h:260,l:80,r:40,t:10,b:30};
+  const ws=document.getElementById('wins-svg'); ws.innerHTML="";
+  const data=[...PLAYERS].sort((a,b)=>b.wins-a.wins);
+  const max=6, bandw=(W.h-W.t-W.b)/data.length;
+  for(let v=0;v<=max;v++){
+    const gx=W.l+(v/max)*(W.w-W.l-W.r);
+    const l=document.createElementNS(NS,"line"); l.setAttribute("class","grid");
+    l.setAttribute("x1",gx);l.setAttribute("x2",gx);l.setAttribute("y1",W.t);l.setAttribute("y2",W.h-W.b); ws.appendChild(l);
+    const t=document.createElementNS(NS,"text"); t.setAttribute("class","tk"); t.setAttribute("x",gx);
+    t.setAttribute("y",W.h-10); t.setAttribute("text-anchor","middle"); t.textContent=v; ws.appendChild(t);
+  }
+  data.forEach((p,i)=>{
+    const cy=W.t+i*bandw, bh=Math.min(bandw-14,30);
+    const bw=(p.wins/max)*(W.w-W.l-W.r);
+    const r=document.createElementNS(NS,"rect");
+    r.setAttribute("x",W.l);r.setAttribute("y",cy+(bandw-bh)/2);r.setAttribute("width",Math.max(bw,2));
+    r.setAttribute("height",bh);r.setAttribute("rx",4);r.setAttribute("fill",col(p.key)); ws.appendChild(r);
+    const nm=document.createElementNS(NS,"text"); nm.setAttribute("class","plabel");
+    nm.setAttribute("x",W.l-10);nm.setAttribute("y",cy+bandw/2+4);nm.setAttribute("text-anchor","end");
+    nm.setAttribute("fill","var(--ink)"); nm.textContent=p.name; ws.appendChild(nm);
+    const vl=document.createElementNS(NS,"text"); vl.setAttribute("class","plabel");
+    vl.setAttribute("x",W.l+bw+8);vl.setAttribute("y",cy+bandw/2+4);vl.setAttribute("fill","var(--ink-2)");
+    vl.textContent=p.wins+(p.n20?"  (dont 1×−20)":""); ws.appendChild(vl);
+  });
+}
+
+/* ---------- THEME ---------- */
+function applyThemeVars(){ drawRace(); drawWins();
+  // recolor dynamic bits that read col() at build time
+  document.querySelectorAll('[style*="--pc"]').forEach(()=>{});
+}
+const btn=document.getElementById('themeBtn');
+function curTheme(){return document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+function setTheme(t){document.documentElement.setAttribute('data-theme',t); btn.textContent=(t==='dark'?'☀️ Clair':'🌙 Sombre'); applyThemeVars();}
+btn.addEventListener('click',()=>setTheme(curTheme()==='dark'?'light':'dark'));
+addEventListener('keydown',e=>{if((e.key==='t'||e.key==='T')&&!/input|textarea/i.test(e.target.tagName))setTheme(curTheme()==='dark'?'light':'dark');});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{drawRace();drawWins();});
+
+/* init */
+btn.textContent=curTheme()==='dark'?'☀️ Clair':'🌙 Sombre';
+drawRace(); drawWins();
+</script>
