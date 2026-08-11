@@ -10,11 +10,11 @@ gagnée en coupant le dernier pli). Le but est d'avoir le **moins** de points.
 | Fichier | Rôle |
 |---|---|
 | `index.html` | Tableau de bord interactif (classement, profils, course, thème clair/sombre) |
-| `manches.csv` | Les données brutes — une ligne par joueur, une colonne par manche |
+| `manches.csv` | Les données brutes au format long — une ligne par (manche, joueur) |
 | `analyse.py` | Script d'analyse (aucune dépendance, `python3 analyse.py`) |
 
 Le CSV et le script s'adaptent tout seuls quand on **passera à 7 joueurs** ou
-qu'on ajoutera des manches : il suffit d'ajouter des lignes / colonnes.
+qu'on ajoutera des manches : il suffit d'ajouter des lignes.
 
 ## Classement après 23 manches
 
@@ -38,16 +38,41 @@ qu'on ajoutera des manches : il suffit d'ajouter des lignes / colonnes.
 - **Justin est le joueur le plus explosif** : seul −20 de la saison, mais aussi
   la pire manche notée (123 pts) et une des plus fortes volatilités.
 
-## ⚠️ L'angle mort : l'ordre de jeu
+## La position de jeu
 
-On note l'ordre de jeu pour l'analyser, mais sur 23 manches il est resté
-**quasi fixe** (Nathan toujours 1ᵉ, Louna 2ᵉ, Julia 3ᵉ ; Andy et Justin n'ont
-échangé leurs sièges que sur les 3 dernières manches). Impossible donc de
-mesurer l'effet de la position : il est confondu avec l'effet « joueur ».
+Les numéros de siège (`siege`) sont des **étiquettes cycliques** : ils disent
+seulement qui est à côté de qui. Le jeu tourne dans le **sens horaire**
+(siège n → n+1). La manche est **ouverte par le dernier au classement cumulé**
+(mécanique de rattrapage) — le script le déduit tout seul, inutile de le noter.
 
-**Pour rendre cette donnée exploitable :**
-1. **Tirer les places au sort à chaque manche** — pour que chaque joueur occupe
-   chaque siège un nombre comparable de fois.
-2. **Noter le donneur** et le **nombre de joueurs** de la manche (une victoire à
-   7 vaut mécaniquement plus qu'à 5).
+Ce qui compte pour analyser la position, ce n'est donc pas le n° de siège mais
+l'**écart, dans le sens horaire, par rapport à celui qui commence**.
+
+Ce qu'on observe pour l'instant :
+
+- **Ouvrir n'aide pas à gagner.** Comme il était presque toujours dernier,
+  **Nathan a ouvert 16 manches sur 23** — et n'en a gagné qu'une.
+- Le score moyen par position relative est calculé (`analyse.py`), mais il reste
+  **à interpréter avec prudence** : la configuration a très peu varié et un seul
+  joueur a ouvert la plupart des manches, donc l'effet « position » est encore
+  **confondu avec l'identité des joueurs**.
+
+**Pour rendre la position vraiment analysable :**
+1. **Changer les places à chaque manche** (tirage au sort) — chaque joueur
+   occupera alors chaque position relative un nombre comparable de fois.
+2. Continuer à noter le **siège de chacun par manche** (déjà en place) et le
+   **nombre de joueurs** présents (une victoire à 7 vaut plus qu'à 5).
 3. Ajouter une colonne **date** pour distinguer les soirées et suivre la forme.
+
+## Format des données
+
+`manches.csv` est au **format long** : une ligne par (manche, joueur), avec son
+siège et son score. Ça s'étend sans effort à 7 joueurs, à des manches où tout le
+monde n'est pas présent, et à des sièges qui changent à chaque manche.
+
+```
+manche,joueur,siege,score
+1,Nathan,1,15
+1,Louna,2,46
+...
+```

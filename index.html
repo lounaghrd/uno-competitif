@@ -171,7 +171,12 @@
   .note p{margin:.5em 0; color:var(--ink-2); font-size:14.5px}
   .note strong{color:var(--ink)}
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
-  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
+  .panel h3{margin:0 0 .2em; font-size:18px; font-weight:800}
+  .mini{font-size:14px; color:var(--ink-2); margin:.2em 0 14px}
+  .mini strong{color:var(--ink)}
+  .caveat{font-size:13px; color:var(--warn); margin:12px 0 0; display:flex; gap:8px; align-items:flex-start; line-height:1.45}
+  .caveat b{color:var(--warn)}
   .miniorder{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
   .seat{display:inline-flex; align-items:center; gap:7px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:5px 11px 5px 8px; font-size:13px; font-weight:600}
   .seat .s{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--pc);color:#fff;font-size:11px;font-weight:800;flex:none}
@@ -231,22 +236,26 @@
     <div class="panel"><svg id="wins-svg" viewBox="0 0 900 260" role="img" aria-label="Nombre de victoires par joueur"></svg></div>
   </section>
 
-  <!-- BLIND SPOT -->
-  <section id="blindspot">
-    <div class="sec-head"><span class="n">06</span><div><h2>L'angle mort de vos données</h2><p class="sec-sub">Vous notez l'ordre de jeu pour l'analyser — mais il ne bouge quasiment jamais.</p></div></div>
+  <!-- POSITION -->
+  <section id="position">
+    <div class="sec-head"><span class="n">06</span><div><h2>La position, correctement lue</h2><p class="sec-sub">Les numéros de siège sont des étiquettes <strong>cycliques</strong> (qui est à côté de qui), pas l'ordre de jeu. C'est le <strong>dernier au classement cumulé</strong> qui ouvre la manche, et le tour part dans le sens horaire. On peut donc reconstruire qui commence, manche par manche.</p></div></div>
     <div class="grid2">
-      <div class="note">
-        <h3>La position ne varie pas → impossible à analyser</h3>
-        <p>Sur 23 manches, l'ordre est resté <strong>fixe à une exception près</strong> : Nathan toujours 1<sup>er</sup>, Louna 2<sup>e</sup>, Julia 3<sup>e</sup>. Andy et Justin n'ont échangé leurs sièges (4/5) que sur les 3 dernières manches.</p>
-        <p>Résultat : on ne peut pas dire si « être 1<sup>er</sup> à jouer » est un avantage, parce que <strong>c'est toujours la même personne</strong> à cette place. L'effet position et l'effet joueur sont confondus.</p>
-        <div class="miniorder" id="seats"></div>
+      <div class="panel">
+        <h3>Qui ouvre la manche&nbsp;?</h3>
+        <p class="mini">Le dernier au cumul commence (mécanique de rattrapage). Résultat : <strong>Nathan a ouvert 16 manches sur 23</strong> — l'éternel dernier — et n'en a gagné qu'une. Ouvrir n'aide pas à gagner.</p>
+        <svg id="starts-svg" viewBox="0 0 440 210" role="img" aria-label="Manches commencées par joueur"></svg>
       </div>
-      <div class="note" style="border-left-color:var(--good)">
-        <h3>Comment débloquer cette analyse</h3>
-        <p><strong>Tirez les places au sort à chaque manche.</strong> Une fois que chaque joueur aura occupé chaque siège un nombre comparable de fois, la moyenne par position deviendra lisible.</p>
-        <p><strong>Notez qui distribue</strong> (le donneur tourne-t-il ?) et le <strong>nombre de joueurs</strong> de la manche : à 7 joueurs, une victoire vaut mécaniquement plus qu'à 5.</p>
-        <p>Pensez à ajouter une colonne <strong>date</strong> pour distinguer une soirée d'une autre, et repérer les tendances de forme.</p>
+      <div class="panel">
+        <h3>Score moyen selon la position</h3>
+        <p class="mini">Écart dans le sens horaire par rapport à celui qui commence. <strong>0 = celui qui ouvre</strong>, 1 = le suivant, etc.</p>
+        <svg id="offset-svg" viewBox="0 0 440 210" role="img" aria-label="Score moyen selon la position relative"></svg>
+        <p class="caveat"><b>⚠</b><span>À lire avec prudence : la configuration a très peu varié et un seul joueur a ouvert la plupart des manches. L'effet « position » reste donc <b>confondu avec l'identité des joueurs</b> — ces écarts ne sont pas encore fiables.</span></p>
       </div>
+    </div>
+    <div class="note" style="border-left-color:var(--good); margin-top:16px">
+      <h3>Pour rendre la position vraiment analysable</h3>
+      <p><strong>Changez les places à chaque manche</strong> (tirage au sort). Au fur et à mesure que les scores se resserreront, le joueur qui « ouvre » variera aussi naturellement — et chaque joueur occupera chaque position relative un nombre comparable de fois. C'est ce qui permettra de séparer l'effet position de l'effet joueur.</p>
+      <p>Continuez à noter le <strong>siège de chacun par manche</strong> (déjà en place) et le <strong>nombre de joueurs</strong> présents. Une colonne <strong>date</strong> aiderait aussi à suivre la forme soirée par soirée.</p>
     </div>
   </section>
 
@@ -302,7 +311,7 @@ const cards=[
   {key:'julia',kick:'Le paradoxe',h:'Julia gagne… et finit dernière',
    b:`<span class="stat">5 victoires</span>, autant qu'Andy — mais <span class="stat">dernière au total (${julia.total})</span>. Ses manches perdues coûtent cher : moyenne de <span class="stat">${julia.moyDef.toFixed(0)} pts</span> et deux cartons à 91 et 102. Elle joue en tout-ou-rien.`},
   {key:'nathan',kick:'Le contre-exemple',h:'Nathan survit sans gagner',
-   b:`<span class="stat">1 seule victoire</span> en 23 manches, et pourtant <span class="stat">4<sup>e</sup>, pas dernier</span>. Sa moyenne en défaite (<span class="stat">${nathan.moyDef.toFixed(0)} pts</span>) est la plus basse du groupe : il encaisse peu, tout le temps.`},
+   b:`<span class="stat">1 seule victoire</span> en 23 manches, et pourtant <span class="stat">4<sup>e</sup>, pas dernier</span> : sa moyenne en défaite (<span class="stat">${nathan.moyDef.toFixed(0)} pts</span>) est la plus basse du groupe. Comme il était presque toujours dernier, c'est lui qui <span class="stat">a ouvert 16 manches sur 23</span> — sans que ça l'aide.`},
   {key:'justin',kick:'Le pari',h:'Justin, le plus explosif',
    b:`Le seul <span class="stat">−20</span> de la saison, mais aussi la pire manche jamais notée (<span class="stat">123 pts</span>) et la 2<sup>e</sup> plus forte volatilité. Quand ça passe, ça rapporte ; quand ça casse…`},
   {key:'louna',kick:'La leader',h:'Louna : gagner ET limiter la casse',
@@ -328,11 +337,50 @@ document.querySelector('#stats tbody').innerHTML=ranked.map(p=>`
     <td class="num ${p.worst===maxWorst?'worstc':''}">${p.worst}</td>
   </tr>`).join('');
 
-/* ---------- SEATS ---------- */
-const seatOrder=[["Nathan",1,"nathan"],["Louna",2,"louna"],["Julia",3,"julia"],["Justin",4,"justin"],["Andy",5,"andy"]];
-document.getElementById('seats').innerHTML=seatOrder.map(([n,s,k])=>`
-  <span class="seat" style="--pc:var(--p-${k})"><span class="s">${s}</span>${n}</span>`).join('')
-  +`<span class="seat" style="--pc:var(--ink-3);opacity:.85"><span class="s">↔</span>Andy&Justin échangent (m.21-23)</span>`;
+/* ---------- POSITION (dérivé par analyse.py, vérifié) ---------- */
+const STARTS=[{key:'nathan',name:'Nathan',n:16},{key:'andy',name:'Andy',n:2},
+              {key:'julia',name:'Julia',n:2},{key:'louna',name:'Louna',n:1},{key:'justin',name:'Justin',n:0}];
+const OFFSET=[{o:0,avg:16.5,wins:4},{o:1,avg:22.1,wins:4},{o:2,avg:26.0,wins:3},
+              {o:3,avg:11.4,wins:6},{o:4,avg:17.7,wins:4}];
+const OFF_REF=18.7;
+const NSVG="http://www.w3.org/2000/svg";
+function bar(svg,x,y,w,h,fill,rx=4){const r=document.createElementNS(NSVG,"rect");
+  r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",Math.max(w,1.5));
+  r.setAttribute("height",h);r.setAttribute("rx",rx);r.setAttribute("fill",fill);svg.appendChild(r);}
+function txt(svg,x,y,s,cls,anchor="start",fill="var(--ink-2)"){const t=document.createElementNS(NSVG,"text");
+  t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("class",cls);t.setAttribute("text-anchor",anchor);
+  if(fill)t.setAttribute("fill",fill);t.textContent=s;svg.appendChild(t);}
+
+function drawStarts(){
+  const s=document.getElementById('starts-svg'); s.innerHTML="";
+  const L=64,R=44,T=8,B=8,W=440,H=210, max=16, bh=26, gap=(H-T-B-STARTS.length*bh)/(STARTS.length-1);
+  STARTS.forEach((p,i)=>{
+    const y=T+i*(bh+gap), w=(p.n/max)*(W-L-R);
+    txt(s,L-8,y+bh/2+4,p.name,"plabel","end","var(--ink)");
+    bar(s,L,y,w,bh,`var(--p-${p.key})`);
+    txt(s,L+Math.max(w,2)+7,y+bh/2+4,p.n+(p.n>1?" manches":" manche"),"plabel","start","var(--ink-2)");
+  });
+}
+function drawOffset(){
+  const s=document.getElementById('offset-svg'); s.innerHTML="";
+  const L=34,R=16,T=14,B=30,W=440,H=210, max=30;
+  const bw=(W-L-R)/OFFSET.length, iw=bw*0.56;
+  // ligne de référence (moyenne globale)
+  const refY=T+(1-OFF_REF/max)*(H-T-B);
+  const rl=document.createElementNS(NSVG,"line"); rl.setAttribute("x1",L);rl.setAttribute("x2",W-R);
+  rl.setAttribute("y1",refY);rl.setAttribute("y2",refY);rl.setAttribute("stroke","var(--ink-3)");
+  rl.setAttribute("stroke-dasharray","4 3");rl.setAttribute("stroke-width","1");s.appendChild(rl);
+  txt(s,L+2,refY-5,`moy. globale ${OFF_REF}`,"tk","start","var(--ink-3)");
+  const minA=Math.min(...OFFSET.map(d=>d.avg)), maxA=Math.max(...OFFSET.map(d=>d.avg));
+  OFFSET.forEach((d,i)=>{
+    const x=L+i*bw+(bw-iw)/2, h=(d.avg/max)*(H-T-B), y=H-B-h;
+    const fill=d.avg===minA?"var(--good)":d.avg===maxA?"var(--accent)":"var(--ink-3)";
+    bar(s,x,y,iw,h,fill);
+    txt(s,x+iw/2,y-6,d.avg.toFixed(1),"plabel","middle","var(--ink)");
+    txt(s,x+iw/2,H-14,"pos "+d.o,"tk","middle","var(--ink-2)");
+    txt(s,x+iw/2,H-2,d.wins+" v.","tk","middle","var(--ink-3)");
+  });
+}
 
 /* ---------- RACE LINE CHART ---------- */
 const RS={w:900,h:440,l:44,r:78,t:16,b:34};
@@ -448,18 +496,15 @@ function drawWins(){
 }
 
 /* ---------- THEME ---------- */
-function applyThemeVars(){ drawRace(); drawWins();
-  // recolor dynamic bits that read col() at build time
-  document.querySelectorAll('[style*="--pc"]').forEach(()=>{});
-}
+function applyThemeVars(){ drawRace(); drawWins(); drawStarts(); drawOffset(); }
 const btn=document.getElementById('themeBtn');
 function curTheme(){return document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
 function setTheme(t){document.documentElement.setAttribute('data-theme',t); btn.textContent=(t==='dark'?'☀️ Clair':'🌙 Sombre'); applyThemeVars();}
 btn.addEventListener('click',()=>setTheme(curTheme()==='dark'?'light':'dark'));
 addEventListener('keydown',e=>{if((e.key==='t'||e.key==='T')&&!/input|textarea/i.test(e.target.tagName))setTheme(curTheme()==='dark'?'light':'dark');});
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{drawRace();drawWins();});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{drawRace();drawWins();drawStarts();drawOffset();});
 
 /* init */
 btn.textContent=curTheme()==='dark'?'☀️ Clair':'🌙 Sombre';
-drawRace(); drawWins();
+drawRace(); drawWins(); drawStarts(); drawOffset();
 </script>
