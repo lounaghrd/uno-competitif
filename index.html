@@ -1,510 +1,668 @@
-<title>UNO Compétitif — Analyse de la ligue</title>
+<title>UNO Compétitif</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root{
     color-scheme: light dark;
-    /* --- warm score-sheet neutrals (light) --- */
-    --bg:        #f7f5ef;
-    --surface:   #fffefb;
-    --surface-2: #f0ede3;
-    --line:      #e2ddcf;
-    --line-2:    #cfc9b8;
-    --ink:       #201d16;
-    --ink-2:     #5c574a;
-    --ink-3:     #8b8574;
-    --accent:    #d1392b;   /* uno red — structural emphasis only */
-    --accent-ink:#fff;
-    --good:      #1f9d63;
-    --warn:      #c98500;
-    /* --- player identities (validated categorical, light steps) --- */
-    --p-nathan:  #2a78d6;
-    --p-louna:   #eb6834;
-    --p-andy:    #1baf7a;
-    --p-julia:   #b98100;
-    --p-justin:  #e87ba4;
-    --shadow: 0 1px 2px rgba(30,26,15,.05), 0 8px 24px -12px rgba(30,26,15,.18);
+    --bg:#f7f5ef; --surface:#fffefb; --surface-2:#f0ede3; --line:#e2ddcf; --line-2:#cfc9b8;
+    --ink:#201d16; --ink-2:#5c574a; --ink-3:#8b8574;
+    --accent:#d1392b; --accent-ink:#fff; --good:#1f9d63; --warn:#c98500;
+    --shadow:0 1px 2px rgba(30,26,15,.05),0 8px 24px -12px rgba(30,26,15,.18);
   }
   :root:not([data-theme="light"]){ @media (prefers-color-scheme: dark){
-    --bg:        #14130d;
-    --surface:   #1e1c14;
-    --surface-2: #26241a;
-    --line:      #322f22;
-    --line-2:    #423e2d;
-    --ink:       #f4f1e6;
-    --ink-2:     #b8b3a2;
-    --ink-3:     #837e6d;
-    --accent:    #f0503f;
-    --accent-ink:#1a0d0a;
-    --good:      #45c789;
-    --warn:      #e0a63a;
-    --p-nathan:  #3987e5;
-    --p-louna:   #e8703b;
-    --p-andy:    #22c78d;
-    --p-julia:   #e0aa2e;
-    --p-justin:  #ec8fb2;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+    --bg:#14130d; --surface:#1e1c14; --surface-2:#26241a; --line:#322f22; --line-2:#423e2d;
+    --ink:#f4f1e6; --ink-2:#b8b3a2; --ink-3:#837e6d;
+    --accent:#f0503f; --accent-ink:#1a0d0a; --good:#45c789; --warn:#e0a63a;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
   }}
   :root[data-theme="dark"]{
-    --bg:        #14130d;
-    --surface:   #1e1c14;
-    --surface-2: #26241a;
-    --line:      #322f22;
-    --line-2:    #423e2d;
-    --ink:       #f4f1e6;
-    --ink-2:     #b8b3a2;
-    --ink-3:     #837e6d;
-    --accent:    #f0503f;
-    --accent-ink:#1a0d0a;
-    --good:      #45c789;
-    --warn:      #e0a63a;
-    --p-nathan:  #3987e5;
-    --p-louna:   #e8703b;
-    --p-andy:    #22c78d;
-    --p-julia:   #e0aa2e;
-    --p-justin:  #ec8fb2;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+    --bg:#14130d; --surface:#1e1c14; --surface-2:#26241a; --line:#322f22; --line-2:#423e2d;
+    --ink:#f4f1e6; --ink-2:#b8b3a2; --ink-3:#837e6d;
+    --accent:#f0503f; --accent-ink:#1a0d0a; --good:#45c789; --warn:#e0a63a;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
   }
-
   *{box-sizing:border-box}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    line-height:1.55; -webkit-font-smoothing:antialiased;
-    font-variant-numeric: tabular-nums;
-  }
-  .wrap{max-width:1080px; margin:0 auto; padding:clamp(20px,4vw,52px) clamp(16px,4vw,40px) 80px}
-  .num{font-variant-numeric: tabular-nums; letter-spacing:-.01em}
+  body{margin:0; background:var(--bg); color:var(--ink); font-variant-numeric:tabular-nums;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px; margin:0 auto; padding:clamp(18px,3.5vw,40px) clamp(14px,4vw,36px) 80px}
+  .num{font-variant-numeric:tabular-nums; letter-spacing:-.01em}
 
-  /* ---------- header ---------- */
-  header{display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; margin-bottom:clamp(28px,5vw,52px)}
+  header{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap}
   .eyebrow{font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--accent)}
-  h1{
-    font-size:clamp(38px,8vw,76px); line-height:.92; margin:.18em 0 0; font-weight:850;
-    letter-spacing:-.03em; text-wrap:balance;
-    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
-  }
+  h1{font-size:clamp(30px,6vw,52px); line-height:.95; margin:.15em 0 0; font-weight:850; letter-spacing:-.03em;
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
   h1 .u{color:var(--accent)}
-  .sub{color:var(--ink-2); font-size:clamp(15px,2vw,17px); margin-top:.5em; max-width:52ch}
-  .toggle{
-    flex:none; background:var(--surface); color:var(--ink-2); border:1px solid var(--line-2);
-    border-radius:999px; padding:8px 14px; font:inherit; font-size:13px; font-weight:600; cursor:pointer;
-    display:inline-flex; gap:7px; align-items:center;
-  }
-  .toggle:hover{border-color:var(--ink-3); color:var(--ink)}
-  .toggle:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .hactions{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  button{font:inherit; cursor:pointer}
+  .btn{background:var(--surface); color:var(--ink-2); border:1px solid var(--line-2); border-radius:999px;
+    padding:8px 13px; font-size:13px; font-weight:600; display:inline-flex; gap:6px; align-items:center}
+  .btn:hover{border-color:var(--ink-3); color:var(--ink)}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .btn.primary:hover{filter:brightness(1.05); color:var(--accent-ink)}
+  .btn.ghost{border-color:transparent; background:transparent}
+  .btn[disabled]{opacity:.45; cursor:not-allowed}
 
-  section{margin-top:clamp(40px,7vw,72px)}
-  .sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:22px}
-  .sec-head .n{font-size:13px; font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums}
-  h2{font-size:clamp(21px,3.4vw,28px); font-weight:800; letter-spacing:-.02em; margin:0; text-wrap:balance}
-  .sec-sub{color:var(--ink-2); font-size:15px; margin:6px 0 0; max-width:64ch}
+  .tabs{display:flex; gap:4px; margin:22px 0 26px; background:var(--surface-2); border:1px solid var(--line);
+    border-radius:12px; padding:4px; width:fit-content}
+  .tab{border:none; background:none; padding:9px 18px; border-radius:9px; font-size:14.5px; font-weight:700; color:var(--ink-2)}
+  .tab.on{background:var(--surface); color:var(--ink); box-shadow:var(--shadow)}
+  .view{display:none} .view.on{display:block}
 
-  /* ---------- standings ---------- */
-  .board{display:flex; flex-direction:column; gap:10px}
-  .row{
-    display:grid; grid-template-columns:44px 1fr auto; align-items:center; gap:16px;
-    background:var(--surface); border:1px solid var(--line); border-radius:14px;
-    padding:14px 18px; box-shadow:var(--shadow); position:relative; overflow:hidden;
-  }
+  h2{font-size:clamp(20px,3vw,26px); font-weight:800; letter-spacing:-.02em; margin:0}
+  .sec-head{display:flex; align-items:baseline; gap:11px; margin:34px 0 18px}
+  .sec-head .n{font-size:13px; font-weight:700; color:var(--accent)}
+  .sec-sub{color:var(--ink-2); font-size:14.5px; margin:5px 0 0; max-width:64ch}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:clamp(15px,2.6vw,24px); box-shadow:var(--shadow)}
+  .panel+.panel, .panel+.note{margin-top:16px}
+  .panel h3{margin:0 0 .2em; font-size:17px; font-weight:800}
+  .mini{font-size:13.5px; color:var(--ink-2); margin:.15em 0 12px} .mini strong{color:var(--ink)}
+
+  /* ---- form ---- */
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:16px}
+  .field label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3)}
+  input[type=datetime-local], input[type=number], input[type=text], select{
+    font:inherit; padding:9px 11px; border:1px solid var(--line-2); border-radius:9px; background:var(--surface-2);
+    color:var(--ink); max-width:100%}
+  input:focus, select:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent)}
+  input[type=number]{width:92px; text-align:right}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line-2); background:var(--surface-2);
+    border-radius:999px; padding:6px 12px 6px 9px; font-size:14px; font-weight:600; cursor:pointer; user-select:none}
+  .chip .dot{width:11px; height:11px; border-radius:50%; background:var(--pc); flex:none}
+  .chip.off{opacity:.4}
+  .chip.off .dot{background:var(--ink-3)}
+  .entry-grid{display:grid; grid-template-columns:1fr; gap:8px}
+  .prow{display:grid; grid-template-columns:20px 1.4fr 78px 92px auto; gap:10px; align-items:center;
+    padding:9px 12px; border:1px solid var(--line); border-radius:11px; background:var(--surface-2)}
+  .prow.win{border-color:var(--good); background:color-mix(in srgb,var(--good) 9%,var(--surface-2))}
+  .prow .dot{width:12px; height:12px; border-radius:50%; background:var(--pc)}
+  .prow .nm{font-weight:700}
+  .prow .seat-w, .prow .score-w{display:flex; flex-direction:column; gap:2px}
+  .prow .cap{font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.05em}
+  .winsel{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-2); white-space:nowrap}
+  .winsel input{margin:0}
+  .starthint{font-size:13.5px; color:var(--ink-2); background:var(--surface-2); border:1px dashed var(--line-2);
+    border-radius:10px; padding:10px 13px; margin:2px 0 16px}
+  .starthint b{color:var(--ink)}
+  .err{color:var(--accent); font-size:13.5px; font-weight:600; margin:4px 0 0; min-height:1.2em}
+  .addrow{display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap}
+
+  /* ---- recent list ---- */
+  .rlist{display:flex; flex-direction:column; gap:8px}
+  .ritem{display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center;
+    padding:11px 14px; border:1px solid var(--line); border-radius:11px; background:var(--surface)}
+  .ritem .mno{font-weight:800; color:var(--ink-3); font-size:15px}
+  .ritem .det{font-size:13.5px; color:var(--ink-2); overflow:hidden}
+  .ritem .win-nm{font-weight:700; color:var(--ink)}
+  .ritem .when{font-size:12px; color:var(--ink-3)}
+
+  /* ---- standings ---- */
+  .board{display:flex; flex-direction:column; gap:9px}
+  .row{display:grid; grid-template-columns:40px 1fr auto; align-items:center; gap:14px; background:var(--surface);
+    border:1px solid var(--line); border-radius:13px; padding:12px 16px; box-shadow:var(--shadow); position:relative; overflow:hidden}
   .row::before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--pc)}
   .row.lead{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
-  .rank{font-size:24px; font-weight:850; color:var(--ink-3); text-align:center; font-variant-numeric:tabular-nums}
+  .rank{font-size:22px; font-weight:850; color:var(--ink-3); text-align:center}
   .row.lead .rank{color:var(--accent)}
-  .who{display:flex; flex-direction:column; gap:3px; min-width:0}
-  .who .nm{font-weight:750; font-size:18px; display:flex; align-items:center; gap:9px}
+  .who{display:flex; flex-direction:column; gap:2px; min-width:0}
+  .who .nm{font-weight:750; font-size:17px; display:flex; align-items:center; gap:8px}
   .dot{width:11px; height:11px; border-radius:50%; background:var(--pc); flex:none}
   .who .tag{font-size:12.5px; color:var(--ink-2)}
   .tot{text-align:right}
-  .tot .big{font-size:30px; font-weight:850; letter-spacing:-.02em; line-height:1}
-  .tot .lbl{font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em}
-  .gapbar{grid-column:1/-1; height:6px; border-radius:4px; background:var(--surface-2); overflow:hidden; margin-top:2px}
+  .tot .big{font-size:27px; font-weight:850; letter-spacing:-.02em; line-height:1}
+  .tot .lbl{font-size:10.5px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em}
+  .gapbar{grid-column:1/-1; height:5px; border-radius:4px; background:var(--surface-2); overflow:hidden; margin-top:2px}
   .gapbar>i{display:block; height:100%; background:var(--pc); border-radius:4px}
 
-  /* ---------- insight cards ---------- */
-  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px}
-  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:var(--shadow)}
-  .card .kick{font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--pc)}
-  .card h3{margin:.35em 0 .5em; font-size:19px; font-weight:800; letter-spacing:-.01em}
-  .card p{margin:0; color:var(--ink-2); font-size:14.5px}
-  .card .stat{font-weight:750; color:var(--ink)}
-
-  /* ---------- chart ---------- */
-  .panel{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:clamp(16px,3vw,26px); box-shadow:var(--shadow)}
-  .legend{display:flex; flex-wrap:wrap; gap:14px 20px; margin-bottom:14px}
-  .lg{display:inline-flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--ink-2); cursor:pointer; user-select:none; border:none; background:none; font-family:inherit; padding:2px 0}
-  .lg .sw{width:22px; height:4px; border-radius:2px; background:var(--pc); flex:none}
-  .lg.off{opacity:.32}
-  .lg.off .sw{background:var(--ink-3)}
-  .chart-scroll{overflow-x:auto; margin:0 -6px; padding:0 6px}
+  .legend{display:flex; flex-wrap:wrap; gap:12px 18px; margin-bottom:12px}
+  .lg{display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; color:var(--ink-2);
+    cursor:pointer; border:none; background:none; padding:2px 0}
+  .lg .sw{width:20px; height:4px; border-radius:2px; background:var(--pc)}
+  .lg.off{opacity:.32} .lg.off .sw{background:var(--ink-3)}
+  .chart-scroll{overflow-x:auto; margin:0 -4px; padding:0 4px; position:relative}
   svg{display:block; width:100%; height:auto; overflow:visible}
-  .axis{stroke:var(--line-2); stroke-width:1}
-  .grid{stroke:var(--line); stroke-width:1}
-  .tk{fill:var(--ink-3); font-size:11px; font-variant-numeric:tabular-nums}
-  .pline{fill:none; stroke-width:2.4; stroke-linejoin:round; stroke-linecap:round; transition:opacity .18s}
-  .plabel{font-size:12px; font-weight:750; font-variant-numeric:tabular-nums}
+  .grid{stroke:var(--line); stroke-width:1} .axis{stroke:var(--line-2); stroke-width:1}
+  .tk{fill:var(--ink-3); font-size:11px}
+  .pline{fill:none; stroke-width:2.3; stroke-linejoin:round; stroke-linecap:round}
+  .plabel{font-size:12px; font-weight:750}
   .crosshair{stroke:var(--ink-3); stroke-width:1; stroke-dasharray:3 3; opacity:0}
   .tipdot{opacity:0}
   .tooltip{position:absolute; pointer-events:none; background:var(--surface); border:1px solid var(--line-2);
-    border-radius:10px; padding:10px 12px; box-shadow:var(--shadow); font-size:13px; opacity:0; transition:opacity .12s; z-index:5; min-width:150px}
-  .tooltip .th{font-weight:750; font-size:12px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px}
-  .tooltip .tr{display:flex; justify-content:space-between; gap:14px; align-items:center; padding:1.5px 0}
-  .tooltip .tr .nm{display:flex; align-items:center; gap:7px; color:var(--ink-2)}
-  .tooltip .tr .vv{font-weight:750; color:var(--ink); font-variant-numeric:tabular-nums}
+    border-radius:10px; padding:9px 11px; box-shadow:var(--shadow); font-size:13px; opacity:0; transition:opacity .12s; z-index:5; min-width:140px}
+  .tooltip .th{font-weight:750; font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px}
+  .tooltip .tr{display:flex; justify-content:space-between; gap:12px; padding:1.5px 0}
+  .tooltip .tr .nm{display:flex; align-items:center; gap:6px; color:var(--ink-2)}
+  .tooltip .tr .vv{font-weight:750; color:var(--ink)}
   .tooltip .sw{width:9px; height:9px; border-radius:50%; background:var(--pc)}
 
-  /* ---------- stat table ---------- */
   .tbl-scroll{overflow-x:auto}
-  table{width:100%; border-collapse:collapse; font-size:14px; min-width:620px}
-  thead th{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); font-weight:700; text-align:right; padding:0 0 10px; border-bottom:2px solid var(--line-2)}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:600px}
+  thead th{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); font-weight:700;
+    text-align:right; padding:0 0 9px; border-bottom:2px solid var(--line-2)}
   thead th:first-child{text-align:left}
-  tbody td{padding:12px 0; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums}
+  tbody td{padding:11px 0; border-bottom:1px solid var(--line); text-align:right}
   tbody td:first-child{text-align:left; font-weight:700}
   tbody tr:last-child td{border-bottom:none}
-  .pname{display:inline-flex; align-items:center; gap:9px}
+  .pname{display:inline-flex; align-items:center; gap:8px}
   .mbar{display:inline-block; height:7px; border-radius:4px; background:var(--pc); vertical-align:middle; margin-left:8px}
-  .best{color:var(--good); font-weight:750}
-  .worstc{color:var(--accent); font-weight:750}
+  .best{color:var(--good); font-weight:750} .worstc{color:var(--accent); font-weight:750}
 
-  /* ---------- note ---------- */
-  .note{border:1px solid var(--line-2); border-left:4px solid var(--warn); background:var(--surface); border-radius:0 14px 14px 0; padding:20px 22px; box-shadow:var(--shadow)}
-  .note h3{margin:0 0 .4em; font-size:18px; font-weight:800}
-  .note p{margin:.5em 0; color:var(--ink-2); font-size:14.5px}
-  .note strong{color:var(--ink)}
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
   @media(max-width:760px){.grid2{grid-template-columns:1fr}}
-  .panel h3{margin:0 0 .2em; font-size:18px; font-weight:800}
-  .mini{font-size:14px; color:var(--ink-2); margin:.2em 0 14px}
-  .mini strong{color:var(--ink)}
   .caveat{font-size:13px; color:var(--warn); margin:12px 0 0; display:flex; gap:8px; align-items:flex-start; line-height:1.45}
   .caveat b{color:var(--warn)}
-  .miniorder{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
-  .seat{display:inline-flex; align-items:center; gap:7px; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:5px 11px 5px 8px; font-size:13px; font-weight:600}
-  .seat .s{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--pc);color:#fff;font-size:11px;font-weight:800;flex:none}
+  .note{border:1px solid var(--line-2); border-left:4px solid var(--good); background:var(--surface);
+    border-radius:0 13px 13px 0; padding:18px 20px; box-shadow:var(--shadow)}
+  .note h3{margin:0 0 .3em; font-size:17px; font-weight:800}
+  .note p{margin:.4em 0; color:var(--ink-2); font-size:14px} .note strong{color:var(--ink)}
+  .empty{text-align:center; color:var(--ink-3); padding:40px 20px; font-size:15px}
 
-  footer{margin-top:64px; padding-top:22px; border-top:1px solid var(--line); color:var(--ink-3); font-size:13px}
-  .kbd{font-family:ui-monospace,monospace; background:var(--surface-2); border:1px solid var(--line-2); border-radius:5px; padding:1px 6px; font-size:12px; color:var(--ink-2)}
+  .filterbar{display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:6px}
+  .filterbar .fl{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3)}
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); background:var(--ink);
+    color:var(--bg); padding:11px 18px; border-radius:999px; font-size:14px; font-weight:600; box-shadow:var(--shadow);
+    opacity:0; pointer-events:none; transition:.25s; z-index:50}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  footer{margin-top:56px; padding-top:20px; border-top:1px solid var(--line); color:var(--ink-3); font-size:13px}
 </style>
 
 <div class="wrap">
   <header>
     <div>
-      <div class="eyebrow">Ligue privée · 23 manches · saison en cours</div>
+      <div class="eyebrow" id="eyebrow">Ligue privée</div>
       <h1><span class="u">UNO</span> Compétitif</h1>
-      <p class="sub">Ce que 23 manches racontent sur 5 joueurs — qui gagne, qui explose, et pourquoi le meilleur n'est pas celui qui remporte le plus de manches. <strong>Moins de points = meilleur classement.</strong></p>
     </div>
-    <button class="toggle" id="themeBtn" aria-label="Changer de thème">🌙 Thème</button>
+    <div class="hactions">
+      <button class="btn" id="btnExport">⬇︎ Exporter CSV</button>
+      <button class="btn" id="btnImport">⬆︎ Importer</button>
+      <input type="file" id="fileInput" accept=".csv" style="display:none">
+      <button class="btn" id="btnTheme">🌙</button>
+      <button class="btn ghost" id="btnReset" title="Réinitialiser aux données d'origine">↺</button>
+    </div>
   </header>
 
-  <!-- STANDINGS -->
-  <section id="standings" style="margin-top:8px">
-    <div class="sec-head"><span class="n">01</span><div><h2>Le classement</h2><p class="sec-sub">Total de points cumulés sur les 23 manches. La barre montre l'écart avec le leader.</p></div></div>
+  <div class="tabs" role="tablist">
+    <button class="tab on" id="tab-saisie" role="tab">✏︎ Saisie</button>
+    <button class="tab" id="tab-analyses" role="tab">📊 Analyses</button>
+  </div>
+
+  <!-- ============ SAISIE ============ -->
+  <div class="view on" id="view-saisie">
+    <div class="panel">
+      <h3>Nouvelle manche</h3>
+      <p class="mini">Coche les joueurs présents, ajuste les sièges si besoin, désigne le vainqueur, saisis les points. Le vainqueur est mis à −10 (ou −20 s'il a coupé le dernier pli).</p>
+
+      <div class="field" style="max-width:260px">
+        <label for="dt">Date & heure</label>
+        <input type="datetime-local" id="dt">
+      </div>
+
+      <div class="field">
+        <label>Joueurs présents</label>
+        <div class="chips" id="presentChips"></div>
+      </div>
+
+      <div class="starthint" id="startHint"></div>
+
+      <div class="entry-grid" id="entryRows"></div>
+
+      <div class="addrow">
+        <input type="text" id="newName" placeholder="Ajouter un joueur…" maxlength="16" style="width:180px">
+        <button class="btn" id="btnAddPlayer">+ Joueur</button>
+      </div>
+
+      <p class="err" id="entryErr"></p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px">
+        <button class="btn primary" id="btnSave">✓ Enregistrer la manche</button>
+        <button class="btn ghost" id="btnClearWin">Réinitialiser le formulaire</button>
+      </div>
+    </div>
+
+    <div class="sec-head"><span class="n">›</span><h2>Dernières manches</h2></div>
+    <div class="rlist" id="recentList"></div>
+  </div>
+
+  <!-- ============ ANALYSES ============ -->
+  <div class="view" id="view-analyses">
+    <div class="filterbar">
+      <span class="fl">Soirée</span>
+      <select id="soireeFilter"></select>
+      <span class="fl" id="scopeInfo"></span>
+    </div>
+
+    <div class="sec-head"><span class="n">01</span><div><h2>Classement</h2><p class="sec-sub">Total de points — moins = mieux.</p></div></div>
     <div class="board" id="board"></div>
-  </section>
 
-  <!-- INSIGHTS -->
-  <section id="insights">
-    <div class="sec-head"><span class="n">02</span><div><h2>Ce que racontent les chiffres</h2><p class="sec-sub">Gagner des manches compte moins que ne jamais exploser.</p></div></div>
-    <div class="cards" id="cards"></div>
-  </section>
-
-  <!-- RACE -->
-  <section id="race">
-    <div class="sec-head"><span class="n">03</span><div><h2>La course, manche après manche</h2><p class="sec-sub">Points cumulés. La ligne la plus basse est en tête. Survole pour lire les positions à chaque manche · clique une légende pour isoler.</p></div></div>
+    <div class="sec-head"><span class="n">02</span><div><h2>La course, manche après manche</h2><p class="sec-sub">Points cumulés. La ligne la plus basse est en tête. Survole pour lire les positions.</p></div></div>
     <div class="panel">
       <div class="legend" id="legend"></div>
-      <div class="chart-scroll" style="position:relative">
-        <div class="tooltip" id="tip"></div>
-        <svg id="race-svg" viewBox="0 0 900 440" role="img" aria-label="Points cumulés par manche pour chaque joueur"></svg>
-      </div>
+      <div class="chart-scroll"><div class="tooltip" id="tip"></div>
+        <svg id="race-svg" viewBox="0 0 900 420" role="img" aria-label="Points cumulés par manche"></svg></div>
     </div>
-  </section>
 
-  <!-- PROFILES -->
-  <section id="profiles">
-    <div class="sec-head"><span class="n">04</span><div><h2>Le profil de chacun</h2><p class="sec-sub">Trié par total. <em>Moy. en défaite</em> = régularité (points encaissés quand on ne gagne pas) · <em>Volatilité</em> = écart-type (plus c'est haut, plus le joueur alterne cartons et catastrophes).</p></div></div>
+    <div class="sec-head"><span class="n">03</span><div><h2>Profils</h2><p class="sec-sub"><em>Moy. défaite</em> = régularité · <em>Volatilité</em> = écart-type.</p></div></div>
     <div class="panel"><div class="tbl-scroll"><table id="stats">
-      <thead><tr>
-        <th>Joueur</th><th>Total</th><th>Moy./manche</th><th>Victoires</th><th>Moy. en défaite</th><th>Volatilité</th><th>Pire manche</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table></div></div>
-  </section>
+      <thead><tr><th>Joueur</th><th>Total</th><th>Moy.</th><th>Vict.</th><th>Moy. défaite</th><th>Volat.</th><th>Pire</th></tr></thead>
+      <tbody></tbody></table></div></div>
 
-  <!-- WINS -->
-  <section id="wins">
-    <div class="sec-head"><span class="n">05</span><div><h2>Répartition des victoires</h2><p class="sec-sub">Une seule manche a été gagnée en coupant le dernier pli (le <strong>−20</strong> de Justin, manche 15).</p></div></div>
-    <div class="panel"><svg id="wins-svg" viewBox="0 0 900 260" role="img" aria-label="Nombre de victoires par joueur"></svg></div>
-  </section>
+    <div class="sec-head"><span class="n">04</span><div><h2>Victoires</h2></div></div>
+    <div class="panel"><svg id="wins-svg" viewBox="0 0 900 240" role="img" aria-label="Victoires par joueur"></svg></div>
 
-  <!-- POSITION -->
-  <section id="position">
-    <div class="sec-head"><span class="n">06</span><div><h2>La position, correctement lue</h2><p class="sec-sub">Les numéros de siège sont des étiquettes <strong>cycliques</strong> (qui est à côté de qui), pas l'ordre de jeu. C'est le <strong>dernier au classement cumulé</strong> qui ouvre la manche, et le tour part dans le sens horaire. On peut donc reconstruire qui commence, manche par manche.</p></div></div>
+    <div class="sec-head"><span class="n">05</span><div><h2>La position</h2><p class="sec-sub">Le <strong>dernier au cumul</strong> ouvre la manche (rattrapage). Ce qui compte, c'est l'écart, dans le sens horaire, à celui qui ouvre.</p></div></div>
     <div class="grid2">
-      <div class="panel">
-        <h3>Qui ouvre la manche&nbsp;?</h3>
-        <p class="mini">Le dernier au cumul commence (mécanique de rattrapage). Résultat : <strong>Nathan a ouvert 16 manches sur 23</strong> — l'éternel dernier — et n'en a gagné qu'une. Ouvrir n'aide pas à gagner.</p>
-        <svg id="starts-svg" viewBox="0 0 440 210" role="img" aria-label="Manches commencées par joueur"></svg>
-      </div>
-      <div class="panel">
-        <h3>Score moyen selon la position</h3>
-        <p class="mini">Écart dans le sens horaire par rapport à celui qui commence. <strong>0 = celui qui ouvre</strong>, 1 = le suivant, etc.</p>
-        <svg id="offset-svg" viewBox="0 0 440 210" role="img" aria-label="Score moyen selon la position relative"></svg>
-        <p class="caveat"><b>⚠</b><span>À lire avec prudence : la configuration a très peu varié et un seul joueur a ouvert la plupart des manches. L'effet « position » reste donc <b>confondu avec l'identité des joueurs</b> — ces écarts ne sont pas encore fiables.</span></p>
-      </div>
+      <div class="panel"><h3>Qui ouvre la manche&nbsp;?</h3><p class="mini" id="startsNote"></p>
+        <svg id="starts-svg" viewBox="0 0 440 210" role="img" aria-label="Manches ouvertes par joueur"></svg></div>
+      <div class="panel"><h3>Score moyen selon la position</h3><p class="mini">0 = celui qui ouvre, sens horaire.</p>
+        <svg id="offset-svg" viewBox="0 0 440 210" role="img" aria-label="Score moyen par position"></svg>
+        <p class="caveat" id="posCaveat"></p></div>
     </div>
-    <div class="note" style="border-left-color:var(--good); margin-top:16px">
-      <h3>Pour rendre la position vraiment analysable</h3>
-      <p><strong>Changez les places à chaque manche</strong> (tirage au sort). Au fur et à mesure que les scores se resserreront, le joueur qui « ouvre » variera aussi naturellement — et chaque joueur occupera chaque position relative un nombre comparable de fois. C'est ce qui permettra de séparer l'effet position de l'effet joueur.</p>
-      <p>Continuez à noter le <strong>siège de chacun par manche</strong> (déjà en place) et le <strong>nombre de joueurs</strong> présents. Une colonne <strong>date</strong> aiderait aussi à suivre la forme soirée par soirée.</p>
-    </div>
-  </section>
+  </div>
 
-  <footer>
-    Analyse générée à partir de votre Google Sheet · 5 joueurs, 23 manches · une victoire = −10 pts (−20 si le dernier pli est coupé).
-    <br>Astuce&nbsp;: appuyez sur <span class="kbd">T</span> pour basculer le thème.
-  </footer>
+  <footer id="foot"></footer>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-const PLAYERS = [
-  {key:"nathan", name:"Nathan", rounds:[15,19,31,14,19,7,64,24,14,-10,101,27,16,25,8,20,8,19,28,24,1,3,6]},
-  {key:"louna",  name:"Louna",  rounds:[46,-10,10,0,17,39,2,-10,15,19,-10,11,4,52,13,31,-10,12,24,-10,84,-10,11]},
-  {key:"andy",   name:"Andy",   rounds:[21,18,26,8,21,33,-10,4,-10,21,9,-10,6,11,32,14,24,-10,64,53,-10,16,70]},
-  {key:"julia",  name:"Julia",  rounds:[2,2,-10,26,-10,11,14,17,91,20,1,51,27,-10,102,-10,26,0,19,60,58,19,-10]},
-  {key:"justin", name:"Justin", rounds:[-10,42,23,-10,34,-10,6,12,37,3,3,123,-10,8,-20,3,12,4,-10,30,60,16,22]},
-];
-const N = PLAYERS[0].rounds.length;
-const col = k => getComputedStyle(document.documentElement).getPropertyValue('--p-'+k).trim();
+/* ================= PALETTE (validée, colorblind-safe) ================= */
+const PAL_LIGHT=['#2a78d6','#eb6834','#1baf7a','#b98100','#e87ba4','#008300','#4a3aa7','#e34948'];
+const PAL_DARK =['#3987e5','#e8703b','#22c78d','#e0aa2e','#ec8fb2','#22a022','#9085e9','#e66767'];
+const NS="http://www.w3.org/2000/svg";
+const KEY="uno-state-v1";
+const isDark=()=>document.documentElement.getAttribute('data-theme')==='dark'
+  || (!document.documentElement.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+function colorFor(name){const i=Math.max(0,state.roster.indexOf(name)); return (isDark()?PAL_DARK:PAL_LIGHT)[i%8];}
 
-// derive stats + cumulative
-PLAYERS.forEach(p=>{
-  let c=0; p.cum=[0];
-  p.rounds.forEach(r=>{c+=r; p.cum.push(c);});
-  p.total=c;
-  p.avg=c/N;
-  const losses=p.rounds.filter(x=>x>=0);
-  p.wins=p.rounds.filter(x=>x<0).length;
-  p.n20=p.rounds.filter(x=>x===-20).length;
-  p.moyDef=losses.reduce((a,b)=>a+b,0)/losses.length;
-  const m=p.avg; p.sd=Math.sqrt(p.rounds.reduce((a,b)=>a+(b-m)**2,0)/N);
-  p.worst=Math.max(...p.rounds);
-});
-const ranked=[...PLAYERS].sort((a,b)=>a.total-b.total);
-const leader=ranked[0];
-
-/* ---------- STANDINGS ---------- */
-const tags={nathan:"1 victoire — l'increvable",louna:"6 victoires — la régularité",andy:"5 victoires — solide",julia:"5 victoires — tout ou rien",justin:"6 victoires — le flambeur"};
-const maxTotal=Math.max(...PLAYERS.map(p=>p.total));
-document.getElementById('board').innerHTML=ranked.map((p,i)=>`
-  <div class="row ${i===0?'lead':''}" style="--pc:var(--p-${p.key})">
-    <div class="rank">${i+1}</div>
-    <div class="who"><span class="nm"><span class="dot"></span>${p.name}</span><span class="tag">${tags[p.key]}</span></div>
-    <div class="tot"><div class="big num">${p.total}</div><div class="lbl">points</div></div>
-    <div class="gapbar"><i style="width:${(p.total/maxTotal*100).toFixed(1)}%"></i></div>
-  </div>`).join('');
-
-/* ---------- INSIGHT CARDS ---------- */
-const julia=PLAYERS.find(p=>p.key==='julia');
-const nathan=PLAYERS.find(p=>p.key==='nathan');
-const justin=PLAYERS.find(p=>p.key==='justin');
-const cards=[
-  {key:'julia',kick:'Le paradoxe',h:'Julia gagne… et finit dernière',
-   b:`<span class="stat">5 victoires</span>, autant qu'Andy — mais <span class="stat">dernière au total (${julia.total})</span>. Ses manches perdues coûtent cher : moyenne de <span class="stat">${julia.moyDef.toFixed(0)} pts</span> et deux cartons à 91 et 102. Elle joue en tout-ou-rien.`},
-  {key:'nathan',kick:'Le contre-exemple',h:'Nathan survit sans gagner',
-   b:`<span class="stat">1 seule victoire</span> en 23 manches, et pourtant <span class="stat">4<sup>e</sup>, pas dernier</span> : sa moyenne en défaite (<span class="stat">${nathan.moyDef.toFixed(0)} pts</span>) est la plus basse du groupe. Comme il était presque toujours dernier, c'est lui qui <span class="stat">a ouvert 16 manches sur 23</span> — sans que ça l'aide.`},
-  {key:'justin',kick:'Le pari',h:'Justin, le plus explosif',
-   b:`Le seul <span class="stat">−20</span> de la saison, mais aussi la pire manche jamais notée (<span class="stat">123 pts</span>) et la 2<sup>e</sup> plus forte volatilité. Quand ça passe, ça rapporte ; quand ça casse…`},
-  {key:'louna',kick:'La leader',h:'Louna : gagner ET limiter la casse',
-   b:`<span class="stat">6 victoires</span> et un total de <span class="stat">${leader.total}</span>, en tête. Elle combine le meilleur des deux mondes : elle remporte des manches sans jamais s'effondrer sur les autres.`},
-];
-document.getElementById('cards').innerHTML=cards.map(c=>`
-  <div class="card" style="--pc:var(--p-${c.key})">
-    <div class="kick">${c.kick}</div><h3>${c.h}</h3><p>${c.b}</p>
-  </div>`).join('');
-
-/* ---------- STATS TABLE ---------- */
-const minDef=Math.min(...PLAYERS.map(p=>p.moyDef));
-const maxWorst=Math.max(...PLAYERS.map(p=>p.worst));
-const maxSd=Math.max(...PLAYERS.map(p=>p.sd));
-document.querySelector('#stats tbody').innerHTML=ranked.map(p=>`
-  <tr>
-    <td><span class="pname" style="--pc:var(--p-${p.key})"><span class="dot"></span>${p.name}</span></td>
-    <td class="num" style="font-weight:750">${p.total}</td>
-    <td class="num">${p.avg.toFixed(1)}</td>
-    <td class="num">${p.wins}${p.n20?` <span style="color:var(--accent)">(−20)</span>`:''}</td>
-    <td class="num ${p.moyDef===minDef?'best':''}">${p.moyDef.toFixed(1)}<span class="mbar" style="width:${(p.moyDef/40*46).toFixed(0)}px"></span></td>
-    <td class="num ${p.sd===maxSd?'worstc':''}">${p.sd.toFixed(1)}</td>
-    <td class="num ${p.worst===maxWorst?'worstc':''}">${p.worst}</td>
-  </tr>`).join('');
-
-/* ---------- POSITION (dérivé par analyse.py, vérifié) ---------- */
-const STARTS=[{key:'nathan',name:'Nathan',n:16},{key:'andy',name:'Andy',n:2},
-              {key:'julia',name:'Julia',n:2},{key:'louna',name:'Louna',n:1},{key:'justin',name:'Justin',n:0}];
-const OFFSET=[{o:0,avg:16.5,wins:4},{o:1,avg:22.1,wins:4},{o:2,avg:26.0,wins:3},
-              {o:3,avg:11.4,wins:6},{o:4,avg:17.7,wins:4}];
-const OFF_REF=18.7;
-const NSVG="http://www.w3.org/2000/svg";
-function bar(svg,x,y,w,h,fill,rx=4){const r=document.createElementNS(NSVG,"rect");
-  r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",Math.max(w,1.5));
-  r.setAttribute("height",h);r.setAttribute("rx",rx);r.setAttribute("fill",fill);svg.appendChild(r);}
-function txt(svg,x,y,s,cls,anchor="start",fill="var(--ink-2)"){const t=document.createElementNS(NSVG,"text");
-  t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("class",cls);t.setAttribute("text-anchor",anchor);
-  if(fill)t.setAttribute("fill",fill);t.textContent=s;svg.appendChild(t);}
-
-function drawStarts(){
-  const s=document.getElementById('starts-svg'); s.innerHTML="";
-  const L=64,R=44,T=8,B=8,W=440,H=210, max=16, bh=26, gap=(H-T-B-STARTS.length*bh)/(STARTS.length-1);
-  STARTS.forEach((p,i)=>{
-    const y=T+i*(bh+gap), w=(p.n/max)*(W-L-R);
-    txt(s,L-8,y+bh/2+4,p.name,"plabel","end","var(--ink)");
-    bar(s,L,y,w,bh,`var(--p-${p.key})`);
-    txt(s,L+Math.max(w,2)+7,y+bh/2+4,p.n+(p.n>1?" manches":" manche"),"plabel","start","var(--ink-2)");
-  });
-}
-function drawOffset(){
-  const s=document.getElementById('offset-svg'); s.innerHTML="";
-  const L=34,R=16,T=14,B=30,W=440,H=210, max=30;
-  const bw=(W-L-R)/OFFSET.length, iw=bw*0.56;
-  // ligne de référence (moyenne globale)
-  const refY=T+(1-OFF_REF/max)*(H-T-B);
-  const rl=document.createElementNS(NSVG,"line"); rl.setAttribute("x1",L);rl.setAttribute("x2",W-R);
-  rl.setAttribute("y1",refY);rl.setAttribute("y2",refY);rl.setAttribute("stroke","var(--ink-3)");
-  rl.setAttribute("stroke-dasharray","4 3");rl.setAttribute("stroke-width","1");s.appendChild(rl);
-  txt(s,L+2,refY-5,`moy. globale ${OFF_REF}`,"tk","start","var(--ink-3)");
-  const minA=Math.min(...OFFSET.map(d=>d.avg)), maxA=Math.max(...OFFSET.map(d=>d.avg));
-  OFFSET.forEach((d,i)=>{
-    const x=L+i*bw+(bw-iw)/2, h=(d.avg/max)*(H-T-B), y=H-B-h;
-    const fill=d.avg===minA?"var(--good)":d.avg===maxA?"var(--accent)":"var(--ink-3)";
-    bar(s,x,y,iw,h,fill);
-    txt(s,x+iw/2,y-6,d.avg.toFixed(1),"plabel","middle","var(--ink)");
-    txt(s,x+iw/2,H-14,"pos "+d.o,"tk","middle","var(--ink-2)");
-    txt(s,x+iw/2,H-2,d.wins+" v.","tk","middle","var(--ink-3)");
-  });
+/* ================= SEED (23 manches, 11/08/2026 15h) ================= */
+const SEED_SCORES={
+ Nathan:[15,19,31,14,19,7,64,24,14,-10,101,27,16,25,8,20,8,19,28,24,1,3,6],
+ Louna:[46,-10,10,0,17,39,2,-10,15,19,-10,11,4,52,13,31,-10,12,24,-10,84,-10,11],
+ Julia:[2,2,-10,26,-10,11,14,17,91,20,1,51,27,-10,102,-10,26,0,19,60,58,19,-10],
+ Justin:[-10,42,23,-10,34,-10,6,12,37,3,3,123,-10,8,-20,3,12,4,-10,30,60,16,22],
+ Andy:[21,18,26,8,21,33,-10,4,-10,21,9,-10,6,11,32,14,24,-10,64,53,-10,16,70],
+};
+function seedState(){
+  const names=['Nathan','Louna','Julia','Justin','Andy'], games=[];
+  for(let k=0;k<23;k++){
+    const swap=k>=20; // Andy/Justin échangent 4<->5 aux manches 21-23
+    const seat={Nathan:1,Louna:2,Julia:3,Justin:swap?5:4,Andy:swap?4:5};
+    games.push({dt:'2026-08-11T15:00', rows:names.map(n=>({name:n,siege:seat[n],score:SEED_SCORES[n][k]}))});
+  }
+  return {roster:names.slice(), games};
 }
 
-/* ---------- RACE LINE CHART ---------- */
-const RS={w:900,h:440,l:44,r:78,t:16,b:34};
-const svg=document.getElementById('race-svg');
-const tip=document.getElementById('tip');
-const yMax=Math.max(...PLAYERS.map(p=>Math.max(...p.cum)));
-const yMin=Math.min(...PLAYERS.map(p=>Math.min(...p.cum)));
-const y0=Math.floor((yMin-10)/50)*50, y1=Math.ceil((yMax+10)/50)*50;
-const X=i=>RS.l+(i/(N))*(RS.w-RS.l-RS.r);
-const Y=v=>RS.t+(1-(v-y0)/(y1-y0))*(RS.h-RS.t-RS.b);
+/* ================= STATE ================= */
+let state=load()||seedState();
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.games)return s;}catch(e){} return null;}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+/* ================= COMPUTE ================= */
+function activeGames(){ // filtre soirée
+  const f=document.getElementById('soireeFilter').value;
+  if(!f||f==='all') return state.games;
+  return state.games.filter(g=>(g.dt||'').slice(0,10)===f);
+}
+function compute(games){
+  const roster=[...new Set([].concat(...games.map(g=>g.rows.map(r=>r.name))))]
+    .sort((a,b)=>state.roster.indexOf(a)-state.roster.indexOf(b));
+  const prof={}, wins={}, cum={};
+  roster.forEach(n=>{prof[n]={scores:[]}; wins[n]=0; cum[n]=[0];});
+  const starters=[];
+  const cumBefore={}; roster.forEach(n=>cumBefore[n]=0);
+  const byOffset={}, startsCount={}; roster.forEach(n=>startsCount[n]=0);
+  games.forEach((g,gi)=>{
+    const present=g.rows.map(r=>r.name);
+    // qui commence : dernier au cumul avant, parmi présents
+    let starter=null, mx=-Infinity, tie=false;
+    present.forEach(n=>{const c=cumBefore[n]; if(c>mx){mx=c; starter=n; tie=false;} else if(c===mx){tie=true;}});
+    if(tie||gi===0) starter=null;
+    starters.push(starter);
+    if(starter) startsCount[starter]++;
+    const seatOf={}; g.rows.forEach(r=>seatOf[r.name]=r.siege);
+    const n=g.rows.length;
+    g.rows.forEach(r=>{
+      prof[r.name].scores.push(r.score);
+      if(r.score<0) wins[r.name]++;
+      if(starter){
+        const off=((seatOf[r.name]-seatOf[starter])%n+n)%n;
+        (byOffset[off]=byOffset[off]||[]).push(r.score);
+      }
+    });
+    // cumul (hold flat si absent) + maj cumBefore
+    roster.forEach(nm=>{
+      const row=g.rows.find(r=>r.name===nm);
+      const prev=cum[nm][cum[nm].length-1];
+      cum[nm].push(row?prev+row.score:prev);
+    });
+    g.rows.forEach(r=>cumBefore[r.name]+=r.score);
+  });
+  // stats finales
+  roster.forEach(n=>{
+    const s=prof[n].scores, def=s.filter(x=>x>=0), m=s.reduce((a,b)=>a+b,0)/s.length;
+    prof[n].total=s.reduce((a,b)=>a+b,0);
+    prof[n].moy=m;
+    prof[n].victoires=wins[n];
+    prof[n].coupes=s.filter(x=>x===-20).length;
+    prof[n].moyDef=def.length?def.reduce((a,b)=>a+b,0)/def.length:0;
+    prof[n].volat=Math.sqrt(s.reduce((a,b)=>a+(b-m)**2,0)/s.length);
+    prof[n].pire=Math.max(...s);
+  });
+  return {roster, prof, cum, starters, startsCount, byOffset, nGames:games.length};
+}
+
+/* ================= RENDER: SAISIE ================= */
+let present={}, seats={}, winner=null, cut=false;
+function initEntry(){
+  const dt=document.getElementById('dt');
+  if(!dt.value){ const last=state.games.length?state.games[state.games.length-1].dt:null;
+    dt.value=last||new Date().toISOString().slice(0,16);}
+  state.roster.forEach(n=>{ if(!(n in present)) present[n]=true; });
+  reseat(); renderChips(); renderEntryRows(); renderStartHint(); renderRecent();
+}
+function reseat(){ let i=1; state.roster.forEach(n=>{ if(present[n]) seats[n]=i++; }); }
+function renderChips(){
+  document.getElementById('presentChips').innerHTML=state.roster.map(n=>
+    `<span class="chip ${present[n]?'':'off'}" data-n="${n}" style="--pc:${colorFor(n)}"><span class="dot"></span>${n}</span>`).join('');
+  document.querySelectorAll('#presentChips .chip').forEach(c=>c.onclick=()=>{
+    const n=c.dataset.n; present[n]=!present[n];
+    if(winner===n&&!present[n]){winner=null;}
+    reseat(); renderChips(); renderEntryRows(); renderStartHint();
+  });
+}
+function renderEntryRows(){
+  const box=document.getElementById('entryRows');
+  const list=state.roster.filter(n=>present[n]);
+  box.innerHTML=list.map(n=>`
+    <div class="prow ${winner===n?'win':''}" data-n="${n}" style="--pc:${colorFor(n)}">
+      <span class="dot"></span>
+      <span class="nm">${n}</span>
+      <span class="seat-w"><span class="cap">siège</span>
+        <input type="number" class="seat-in" data-n="${n}" value="${seats[n]||''}" min="1" step="1"></span>
+      <span class="score-w"><span class="cap">points</span>
+        <input type="number" class="score-in" data-n="${n}" value="${winner===n?(cut?-20:-10):''}" ${winner===n?'disabled':''} step="1" placeholder="0"></span>
+      <label class="winsel"><input type="radio" name="win" ${winner===n?'checked':''} data-n="${n}"> gagnant
+        ${winner===n?`<label class="winsel" style="margin-left:6px"><input type="checkbox" id="cutbox" ${cut?'checked':''}> −20 (dernier pli)</label>`:''}
+      </label>
+    </div>`).join('');
+  box.querySelectorAll('.seat-in').forEach(i=>i.onchange=e=>{seats[e.target.dataset.n]=parseInt(e.target.value)||0;});
+  box.querySelectorAll('input[name=win]').forEach(r=>r.onchange=e=>{winner=e.target.dataset.n; cut=false; renderEntryRows();});
+  const cb=document.getElementById('cutbox'); if(cb)cb.onchange=e=>{cut=e.target.checked; renderEntryRows();};
+}
+function renderStartHint(){
+  // qui commence la prochaine manche = dernier au cumul global, parmi présents
+  const {cum}=compute(state.games); // cumul global complet
+  const totals={}; state.roster.forEach(n=>{const a=cum[n]; totals[n]=a?a[a.length-1]:0;});
+  const list=state.roster.filter(n=>present[n]);
+  let s=null,mx=-Infinity,tie=false;
+  list.forEach(n=>{const c=totals[n]??0; if(c>mx){mx=c;s=n;tie=false;}else if(c===mx)tie=true;});
+  const el=document.getElementById('startHint');
+  if(!list.length){el.innerHTML='Sélectionne au moins un joueur.'; return;}
+  el.innerHTML = (tie||!state.games.length)
+    ? `<b>Qui commence :</b> égalité au classement (ou 1re manche) — à vous de décider.`
+    : `<b>${s}</b> commence cette manche (dernier au classement cumulé, ${mx} pts).`;
+}
+function renderRecent(){
+  const box=document.getElementById('recentList');
+  if(!state.games.length){box.innerHTML='<div class="empty">Aucune manche enregistrée.</div>'; return;}
+  const items=state.games.map((g,i)=>({g,i})).slice(-8).reverse();
+  box.innerHTML=items.map(({g,i})=>{
+    const w=g.rows.find(r=>r.score<0);
+    const wn=w?w.name:'—', pts=w?w.score:'';
+    const d=(g.dt||'').replace('T',' ');
+    return `<div class="ritem">
+      <span class="mno">m${i+1}</span>
+      <span class="det"><span class="win-nm" style="color:${w?colorFor(wn):''}">${wn}</span> gagne (${pts}) · ${g.rows.length} joueurs<br><span class="when">${d}</span></span>
+      <button class="btn ghost" data-del="${i}" title="Supprimer">✕</button></div>`;
+  }).join('');
+  box.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.del;
+    if(confirm('Supprimer la manche m'+(i+1)+' ?')){state.games.splice(i,1); save(); initEntry(); renderAnalyses(); toast('Manche supprimée');}
+  });
+}
+function saveManche(){
+  const err=document.getElementById('entryErr'); err.textContent='';
+  const list=state.roster.filter(n=>present[n]);
+  if(list.length<2){err.textContent='Il faut au moins 2 joueurs.'; return;}
+  if(!winner){err.textContent='Désigne le vainqueur de la manche.'; return;}
+  const seatVals=list.map(n=>seats[n]);
+  if(new Set(seatVals).size!==seatVals.length || seatVals.some(v=>!v||v<1)){err.textContent='Les sièges doivent être distincts et ≥ 1.'; return;}
+  const rows=[];
+  for(const n of list){
+    let sc;
+    if(n===winner){ sc=cut?-20:-10; }
+    else{
+      const inp=document.querySelector(`.score-in[data-n="${CSS.escape(n)}"]`);
+      const v=inp?inp.value:'';
+      if(v===''||isNaN(+v)){err.textContent=`Points manquants pour ${n}.`; return;}
+      sc=Math.round(+v);
+      if(sc<0){err.textContent=`Score négatif pour ${n} : seul le vainqueur peut être négatif.`; return;}
+    }
+    rows.push({name:n, siege:seats[n], score:sc});
+  }
+  const dt=document.getElementById('dt').value||'';
+  state.games.push({dt, rows});
+  save();
+  winner=null; cut=false;
+  const inp=document.getElementById('dt'); // garde la date
+  initEntry(); renderAnalyses();
+  toast('Manche m'+state.games.length+' enregistrée ✓');
+}
+
+/* ================= RENDER: ANALYSES ================= */
+function renderSoireeFilter(){
+  const sel=document.getElementById('soireeFilter');
+  const dates=[...new Set(state.games.map(g=>(g.dt||'').slice(0,10)).filter(Boolean))].sort();
+  const cur=sel.value||'all';
+  sel.innerHTML=`<option value="all">Toutes (${state.games.length} manches)</option>`+
+    dates.map(d=>{const c=state.games.filter(g=>(g.dt||'').slice(0,10)===d).length;
+      const fr=d.split('-').reverse().join('/'); return `<option value="${d}">${fr} (${c})</option>`;}).join('');
+  sel.value=[...sel.options].some(o=>o.value===cur)?cur:'all';
+}
+function renderAnalyses(){
+  renderSoireeFilter();
+  const games=activeGames();
+  document.getElementById('scopeInfo').textContent = games.length? `${games.length} manche(s) analysée(s)` : '';
+  if(!games.length){ ['board'].forEach(id=>document.getElementById(id).innerHTML='<div class="empty">Aucune donnée.</div>');
+    ['race-svg','wins-svg','starts-svg','offset-svg'].forEach(id=>document.getElementById(id).innerHTML='');
+    document.querySelector('#stats tbody').innerHTML=''; return; }
+  const C=compute(games);
+  renderBoard(C); renderRace(C); renderStats(C); renderWins(C); renderPosition(C);
+}
+function renderBoard(C){
+  const ranked=[...C.roster].sort((a,b)=>C.prof[a].total-C.prof[b].total);
+  const maxT=Math.max(...ranked.map(n=>C.prof[n].total),1);
+  document.getElementById('board').innerHTML=ranked.map((n,i)=>{
+    const p=C.prof[n];
+    return `<div class="row ${i===0?'lead':''}" style="--pc:${colorFor(n)}">
+      <div class="rank">${i+1}</div>
+      <div class="who"><span class="nm"><span class="dot"></span>${n}</span>
+        <span class="tag">${p.victoires} victoire${p.victoires>1?'s':''}${p.coupes?` · ${p.coupes}×−20`:''} · ${p.scores.length} manches</span></div>
+      <div class="tot"><div class="big num">${p.total}</div><div class="lbl">points</div></div>
+      <div class="gapbar"><i style="width:${Math.max(0,p.total/maxT*100).toFixed(1)}%"></i></div></div>`;
+  }).join('');
+}
+function renderStats(C){
+  const ranked=[...C.roster].sort((a,b)=>C.prof[a].total-C.prof[b].total);
+  const minDef=Math.min(...ranked.map(n=>C.prof[n].moyDef));
+  const maxSd=Math.max(...ranked.map(n=>C.prof[n].volat));
+  const maxW=Math.max(...ranked.map(n=>C.prof[n].pire));
+  document.querySelector('#stats tbody').innerHTML=ranked.map(n=>{const p=C.prof[n];
+    return `<tr><td><span class="pname" style="--pc:${colorFor(n)}"><span class="dot"></span>${n}</span></td>
+      <td class="num" style="font-weight:750">${p.total}</td>
+      <td class="num">${p.moy.toFixed(1)}</td>
+      <td class="num">${p.victoires}${p.coupes?` <span style="color:var(--accent)">(−20)</span>`:''}</td>
+      <td class="num ${p.moyDef===minDef?'best':''}">${p.moyDef.toFixed(1)}<span class="mbar" style="--pc:${colorFor(n)};width:${(p.moyDef/45*46).toFixed(0)}px"></span></td>
+      <td class="num ${p.volat===maxSd?'worstc':''}">${p.volat.toFixed(1)}</td>
+      <td class="num ${p.pire===maxW?'worstc':''}">${p.pire}</td></tr>`;}).join('');
+}
 let hidden={};
-function drawRace(){
-  const NS="http://www.w3.org/2000/svg";
+function renderRace(C){
+  const svg=document.getElementById('race-svg'), tip=document.getElementById('tip');
+  const R={w:900,h:420,l:44,r:86,t:14,b:32}, N=C.nGames;
+  const ranked=[...C.roster].sort((a,b)=>C.prof[a].total-C.prof[b].total);
+  const all=[].concat(...C.roster.map(n=>C.cum[n]));
+  const y0=Math.floor((Math.min(...all)-10)/50)*50, y1=Math.ceil((Math.max(...all)+10)/50)*50;
+  const X=i=>R.l+(N?i/N:0)*(R.w-R.l-R.r), Y=v=>R.t+(1-(v-y0)/((y1-y0)||1))*(R.h-R.t-R.b);
+  // legend
+  document.getElementById('legend').innerHTML=ranked.map(n=>
+    `<button class="lg ${hidden[n]?'off':''}" data-n="${n}" style="--pc:${colorFor(n)}"><span class="sw"></span>${n}</button>`).join('');
+  document.querySelectorAll('.lg').forEach(b=>b.onclick=()=>{hidden[b.dataset.n]=!hidden[b.dataset.n]; renderRace(C);});
   svg.innerHTML="";
-  // grid + y ticks
-  for(let v=y0; v<=y1; v+=50){
-    const gy=Y(v);
-    const l=document.createElementNS(NS,"line");
-    l.setAttribute("class","grid"); l.setAttribute("x1",RS.l); l.setAttribute("x2",RS.w-RS.r);
-    l.setAttribute("y1",gy); l.setAttribute("y2",gy); svg.appendChild(l);
-    const t=document.createElementNS(NS,"text");
-    t.setAttribute("class","tk"); t.setAttribute("x",RS.l-8); t.setAttribute("y",gy+4);
-    t.setAttribute("text-anchor","end"); t.textContent=v; svg.appendChild(t);
-  }
-  // x ticks (every ~4)
-  for(let i=0;i<=N;i+=4){
-    const t=document.createElementNS(NS,"text");
-    t.setAttribute("class","tk"); t.setAttribute("x",X(i)); t.setAttribute("y",RS.h-8);
-    t.setAttribute("text-anchor","middle"); t.textContent=i===0?"début":"m."+i; svg.appendChild(t);
-  }
-  // lines
-  const active=ranked.filter(p=>!hidden[p.key]);
-  PLAYERS.forEach(p=>{
-    if(hidden[p.key]) return;
-    const d=p.cum.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
-    const path=document.createElementNS(NS,"path");
-    path.setAttribute("class","pline"); path.setAttribute("d",d);
-    path.setAttribute("stroke",col(p.key)); svg.appendChild(path);
-    // end label with rank
-    const rk=ranked.findIndex(r=>r.key===p.key)+1;
-    const t=document.createElementNS(NS,"text");
-    t.setAttribute("class","plabel"); t.setAttribute("x",X(N)+8); t.setAttribute("y",Y(p.cum[N])+4);
-    t.setAttribute("fill",col(p.key)); t.textContent=`${p.name} ${p.total}`;
-    svg.appendChild(t);
-  });
-  // crosshair + dots
-  const cross=document.createElementNS(NS,"line");
-  cross.setAttribute("class","crosshair"); cross.setAttribute("id","cross");
-  cross.setAttribute("y1",RS.t); cross.setAttribute("y2",RS.h-RS.b); svg.appendChild(cross);
-  PLAYERS.forEach(p=>{
-    if(hidden[p.key])return;
-    const c=document.createElementNS(NS,"circle");
-    c.setAttribute("class","tipdot"); c.setAttribute("r",4.5);
-    c.setAttribute("fill",col(p.key)); c.setAttribute("stroke","var(--surface)"); c.setAttribute("stroke-width",2);
-    c.dataset.key=p.key; svg.appendChild(c);
-  });
-}
-function raceHover(evt){
-  const pt=svg.getBoundingClientRect();
-  const sx=(evt.clientX-pt.left)/pt.width*RS.w;
-  let i=Math.round(((sx-RS.l)/(RS.w-RS.l-RS.r))*N);
-  i=Math.max(0,Math.min(N,i));
-  const cross=document.getElementById('cross');
-  cross.setAttribute("x1",X(i)); cross.setAttribute("x2",X(i)); cross.style.opacity=1;
-  const rows=PLAYERS.filter(p=>!hidden[p.key]).map(p=>({p,v:p.cum[i]})).sort((a,b)=>a.v-b.v);
-  svg.querySelectorAll('.tipdot').forEach(d=>{
-    const p=PLAYERS.find(x=>x.key===d.dataset.key);
-    d.setAttribute("cx",X(i)); d.setAttribute("cy",Y(p.cum[i])); d.style.opacity=1;
-  });
-  tip.innerHTML=`<div class="th">${i===0?'Avant la 1re manche':'Après manche '+i}</div>`+
-    rows.map(({p,v})=>`<div class="tr"><span class="nm"><span class="sw" style="background:var(--p-${p.key})"></span>${p.name}</span><span class="vv">${v}</span></div>`).join('');
-  tip.style.opacity=1;
-  const px=X(i)/RS.w*pt.width;
-  tip.style.left=Math.min(px+14, pt.width-tip.offsetWidth-4)+"px";
-  tip.style.top="10px";
-}
-svg.addEventListener('mousemove',raceHover);
-svg.addEventListener('mouseleave',()=>{tip.style.opacity=0;const c=document.getElementById('cross');if(c)c.style.opacity=0;svg.querySelectorAll('.tipdot').forEach(d=>d.style.opacity=0);});
-
-/* legend */
-document.getElementById('legend').innerHTML=ranked.map(p=>`
-  <button class="lg" data-key="${p.key}" style="--pc:var(--p-${p.key})"><span class="sw"></span>${p.name}</button>`).join('');
-document.querySelectorAll('.lg').forEach(b=>b.addEventListener('click',()=>{
-  const k=b.dataset.key; hidden[k]=!hidden[k]; b.classList.toggle('off',hidden[k]); drawRace();
-}));
-
-/* ---------- WINS BAR CHART ---------- */
-function drawWins(){
-  const NS="http://www.w3.org/2000/svg", W={w:900,h:260,l:80,r:40,t:10,b:30};
-  const ws=document.getElementById('wins-svg'); ws.innerHTML="";
-  const data=[...PLAYERS].sort((a,b)=>b.wins-a.wins);
-  const max=6, bandw=(W.h-W.t-W.b)/data.length;
-  for(let v=0;v<=max;v++){
-    const gx=W.l+(v/max)*(W.w-W.l-W.r);
+  for(let v=y0; v<=y1; v+=50){const gy=Y(v);
     const l=document.createElementNS(NS,"line"); l.setAttribute("class","grid");
-    l.setAttribute("x1",gx);l.setAttribute("x2",gx);l.setAttribute("y1",W.t);l.setAttribute("y2",W.h-W.b); ws.appendChild(l);
-    const t=document.createElementNS(NS,"text"); t.setAttribute("class","tk"); t.setAttribute("x",gx);
-    t.setAttribute("y",W.h-10); t.setAttribute("text-anchor","middle"); t.textContent=v; ws.appendChild(t);
-  }
-  data.forEach((p,i)=>{
-    const cy=W.t+i*bandw, bh=Math.min(bandw-14,30);
-    const bw=(p.wins/max)*(W.w-W.l-W.r);
-    const r=document.createElementNS(NS,"rect");
-    r.setAttribute("x",W.l);r.setAttribute("y",cy+(bandw-bh)/2);r.setAttribute("width",Math.max(bw,2));
-    r.setAttribute("height",bh);r.setAttribute("rx",4);r.setAttribute("fill",col(p.key)); ws.appendChild(r);
-    const nm=document.createElementNS(NS,"text"); nm.setAttribute("class","plabel");
-    nm.setAttribute("x",W.l-10);nm.setAttribute("y",cy+bandw/2+4);nm.setAttribute("text-anchor","end");
-    nm.setAttribute("fill","var(--ink)"); nm.textContent=p.name; ws.appendChild(nm);
-    const vl=document.createElementNS(NS,"text"); vl.setAttribute("class","plabel");
-    vl.setAttribute("x",W.l+bw+8);vl.setAttribute("y",cy+bandw/2+4);vl.setAttribute("fill","var(--ink-2)");
-    vl.textContent=p.wins+(p.n20?"  (dont 1×−20)":""); ws.appendChild(vl);
-  });
+    l.setAttribute("x1",R.l);l.setAttribute("x2",R.w-R.r);l.setAttribute("y1",gy);l.setAttribute("y2",gy);svg.appendChild(l);
+    const t=document.createElementNS(NS,"text"); t.setAttribute("class","tk");t.setAttribute("x",R.l-8);
+    t.setAttribute("y",gy+4);t.setAttribute("text-anchor","end");t.textContent=v;svg.appendChild(t);}
+  const step=Math.max(1,Math.ceil(N/7));
+  for(let i=0;i<=N;i+=step){const t=document.createElementNS(NS,"text");t.setAttribute("class","tk");
+    t.setAttribute("x",X(i));t.setAttribute("y",R.h-8);t.setAttribute("text-anchor","middle");
+    t.textContent=i===0?"début":"m."+i;svg.appendChild(t);}
+  C.roster.forEach(n=>{ if(hidden[n])return;
+    const d=C.cum[n].map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    const p=document.createElementNS(NS,"path");p.setAttribute("class","pline");p.setAttribute("d",d);
+    p.setAttribute("stroke",colorFor(n));svg.appendChild(p);
+    const t=document.createElementNS(NS,"text");t.setAttribute("class","plabel");t.setAttribute("x",X(N)+8);
+    t.setAttribute("y",Y(C.cum[n][N])+4);t.setAttribute("fill",colorFor(n));t.textContent=`${n} ${C.prof[n].total}`;svg.appendChild(t);});
+  const cross=document.createElementNS(NS,"line");cross.setAttribute("class","crosshair");cross.setAttribute("id","cross");
+  cross.setAttribute("y1",R.t);cross.setAttribute("y2",R.h-R.b);svg.appendChild(cross);
+  C.roster.forEach(n=>{if(hidden[n])return;const c=document.createElementNS(NS,"circle");c.setAttribute("class","tipdot");
+    c.setAttribute("r",4.5);c.setAttribute("fill",colorFor(n));c.setAttribute("stroke","var(--surface)");
+    c.setAttribute("stroke-width",2);c.dataset.n=n;svg.appendChild(c);});
+  svg.onmousemove=evt=>{const bb=svg.getBoundingClientRect();const sx=(evt.clientX-bb.left)/bb.width*R.w;
+    let i=Math.round(((sx-R.l)/(R.w-R.l-R.r))*N);i=Math.max(0,Math.min(N,i));
+    const cr=document.getElementById('cross');cr.setAttribute("x1",X(i));cr.setAttribute("x2",X(i));cr.style.opacity=1;
+    const rows=C.roster.filter(n=>!hidden[n]).map(n=>({n,v:C.cum[n][i]})).sort((a,b)=>a.v-b.v);
+    svg.querySelectorAll('.tipdot').forEach(d=>{const n=d.dataset.n;d.setAttribute("cx",X(i));d.setAttribute("cy",Y(C.cum[n][i]));d.style.opacity=1;});
+    tip.innerHTML=`<div class="th">${i===0?'Début':'Après m.'+i}</div>`+rows.map(({n,v})=>
+      `<div class="tr"><span class="nm"><span class="sw" style="background:${colorFor(n)}"></span>${n}</span><span class="vv">${v}</span></div>`).join('');
+    tip.style.opacity=1;const px=X(i)/R.w*bb.width;tip.style.left=Math.min(px+14,bb.width-tip.offsetWidth-4)+"px";tip.style.top="8px";};
+  svg.onmouseleave=()=>{tip.style.opacity=0;const c=document.getElementById('cross');if(c)c.style.opacity=0;
+    svg.querySelectorAll('.tipdot').forEach(d=>d.style.opacity=0);};
+}
+function bar(svg,x,y,w,h,fill,rx=4){const r=document.createElementNS(NS,"rect");r.setAttribute("x",x);r.setAttribute("y",y);
+  r.setAttribute("width",Math.max(w,1.5));r.setAttribute("height",h);r.setAttribute("rx",rx);r.setAttribute("fill",fill);svg.appendChild(r);}
+function txt(svg,x,y,s,cls,anchor="start",fill="var(--ink-2)"){const t=document.createElementNS(NS,"text");t.setAttribute("x",x);
+  t.setAttribute("y",y);t.setAttribute("class",cls);t.setAttribute("text-anchor",anchor);if(fill)t.setAttribute("fill",fill);t.textContent=s;svg.appendChild(t);}
+function renderWins(C){
+  const s=document.getElementById('wins-svg');s.innerHTML="";
+  const data=[...C.roster].sort((a,b)=>C.prof[b].victoires-C.prof[a].victoires);
+  const W={w:900,h:240,l:88,r:60,t:8,b:28}, max=Math.max(...data.map(n=>C.prof[n].victoires),1);
+  const band=(W.h-W.t-W.b)/data.length;
+  for(let v=0;v<=max;v++){const gx=W.l+(v/max)*(W.w-W.l-W.r);
+    const l=document.createElementNS(NS,"line");l.setAttribute("class","grid");l.setAttribute("x1",gx);l.setAttribute("x2",gx);
+    l.setAttribute("y1",W.t);l.setAttribute("y2",W.h-W.b);s.appendChild(l);
+    txt(s,gx,W.h-10,v,"tk","middle");}
+  data.forEach((n,i)=>{const p=C.prof[n];const cy=W.t+i*band,bh=Math.min(band-14,28);
+    const bw=(p.victoires/max)*(W.w-W.l-W.r);
+    bar(s,W.l,cy+(band-bh)/2,bw,bh,colorFor(n));
+    txt(s,W.l-10,cy+band/2+4,n,"plabel","end","var(--ink)");
+    txt(s,W.l+bw+8,cy+band/2+4,p.victoires+(p.coupes?`  (${p.coupes}×−20)`:''),"plabel","start","var(--ink-2)");});
+}
+function renderPosition(C){
+  // starts
+  const s1=document.getElementById('starts-svg');s1.innerHTML="";
+  const starts=[...C.roster].map(n=>({n,c:C.startsCount[n]})).sort((a,b)=>b.c-a.c);
+  const topStart=starts[0];
+  document.getElementById('startsNote').innerHTML = topStart&&topStart.c
+    ? `Le dernier au cumul ouvre la manche. <strong>${topStart.n} a ouvert ${topStart.c} manche${topStart.c>1?'s':''}</strong> sur ${C.nGames}.`
+    : `Pas encore assez de manches pour dégager un ouvreur dominant.`;
+  const maxS=Math.max(...starts.map(o=>o.c),1),L=70,R=48,T=8,B=8,H=210,Wd=440;
+  const bh=Math.min(26,(H-T-B)/starts.length-8), gap=starts.length>1?(H-T-B-starts.length*bh)/(starts.length-1):0;
+  starts.forEach((o,i)=>{const y=T+i*(bh+gap),w=(o.c/maxS)*(Wd-L-R);
+    txt(s1,L-8,y+bh/2+4,o.n,"plabel","end","var(--ink)");
+    bar(s1,L,y,w,bh,colorFor(o.n));
+    txt(s1,L+Math.max(w,2)+7,y+bh/2+4,o.c,"plabel","start","var(--ink-2)");});
+  // offset
+  const s2=document.getElementById('offset-svg');s2.innerHTML="";
+  const offs=Object.keys(C.byOffset).map(Number).sort((a,b)=>a-b);
+  const avg=o=>{const a=C.byOffset[o];return a.reduce((x,y)=>x+y,0)/a.length;};
+  const allScores=[].concat(...offs.map(o=>C.byOffset[o]));
+  const cav=document.getElementById('posCaveat');
+  if(!offs.length){s2.innerHTML="";cav.innerHTML="";return;}
+  const ref=allScores.reduce((a,b)=>a+b,0)/allScores.length;
+  const O={l:34,r:16,t:14,b:32,w:440,h:210}, max=Math.max(...offs.map(avg),ref)*1.15;
+  const bw=(O.w-O.l-O.r)/offs.length, iw=bw*0.56;
+  const refY=O.t+(1-ref/max)*(O.h-O.t-O.b);
+  const rl=document.createElementNS(NS,"line");rl.setAttribute("x1",O.l);rl.setAttribute("x2",O.w-O.r);
+  rl.setAttribute("y1",refY);rl.setAttribute("y2",refY);rl.setAttribute("stroke","var(--ink-3)");
+  rl.setAttribute("stroke-dasharray","4 3");rl.setAttribute("stroke-width","1");s2.appendChild(rl);
+  txt(s2,O.l+2,refY-5,`moy. ${ref.toFixed(1)}`,"tk","start","var(--ink-3)");
+  const avgs=offs.map(avg),mn=Math.min(...avgs),mx=Math.max(...avgs);
+  offs.forEach((o,i)=>{const a=avg(o),h=Math.max(0,(a/max)*(O.h-O.t-O.b)),x=O.l+i*bw+(bw-iw)/2,y=O.h-O.b-h;
+    const w=C.byOffset[o].filter(v=>v<0).length;
+    const fill=a===mn?"var(--good)":a===mx?"var(--accent)":"var(--ink-3)";
+    bar(s2,x,y,iw,h,fill);
+    txt(s2,x+iw/2,y-6,a.toFixed(1),"plabel","middle","var(--ink)");
+    txt(s2,x+iw/2,O.h-14,"pos "+o,"tk","middle","var(--ink-2)");
+    txt(s2,x+iw/2,O.h-2,w+" v.","tk","middle","var(--ink-3)");});
+  cav.innerHTML=`<b>⚠</b><span>À lire avec prudence tant que les places ne varient pas : l'effet « position » reste confondu avec l'identité des joueurs.</span>`;
 }
 
-/* ---------- THEME ---------- */
-function applyThemeVars(){ drawRace(); drawWins(); drawStarts(); drawOffset(); }
-const btn=document.getElementById('themeBtn');
-function curTheme(){return document.documentElement.getAttribute('data-theme')|| (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
-function setTheme(t){document.documentElement.setAttribute('data-theme',t); btn.textContent=(t==='dark'?'☀️ Clair':'🌙 Sombre'); applyThemeVars();}
-btn.addEventListener('click',()=>setTheme(curTheme()==='dark'?'light':'dark'));
-addEventListener('keydown',e=>{if((e.key==='t'||e.key==='T')&&!/input|textarea/i.test(e.target.tagName))setTheme(curTheme()==='dark'?'light':'dark');});
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{drawRace();drawWins();drawStarts();drawOffset();});
+/* ================= CSV EXPORT / IMPORT ================= */
+function toCSV(){
+  const lines=['datetime,manche,joueur,siege,score'];
+  state.games.forEach((g,i)=>g.rows.forEach(r=>lines.push(`${g.dt||''},${i+1},${r.name},${r.siege},${r.score}`)));
+  return lines.join('\n')+'\n';
+}
+async function exportCSV(){
+  const data=toCSV(), fn=`uno-manches-${new Date().toISOString().slice(0,10)}.csv`;
+  if(window.claude&&window.claude.downloads&&window.claude.downloads.save){
+    try{ await window.claude.downloads.save({filename:fn,data}); toast('CSV exporté'); return; }catch(e){ if(e&&/declin|cancel/i.test(e.message||'')){return;} }
+  }
+  const blob=new Blob([data],{type:'text/csv'}),url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=fn;a.click();URL.revokeObjectURL(url);toast('CSV exporté');
+}
+function importCSV(text){
+  const lines=text.trim().split(/\r?\n/); const head=lines.shift().split(',').map(s=>s.trim());
+  const idx=k=>head.indexOf(k);
+  const gi=idx('manche'),ni=idx('joueur'),si=idx('siege'),sc=idx('score'),di=idx('datetime');
+  if(gi<0||ni<0||si<0||sc<0){toast('CSV invalide'); return;}
+  const byM={};const order=[];
+  lines.forEach(l=>{if(!l.trim())return;const c=l.split(',');const m=c[gi].trim();
+    if(!(m in byM)){byM[m]={dt:di>=0?(c[di]||'').trim():'',rows:[]};order.push(m);}
+    byM[m].rows.push({name:c[ni].trim(),siege:parseInt(c[si])||0,score:Math.round(+c[sc])||0});});
+  const games=order.map(m=>byM[m]);
+  const roster=[...new Set([].concat(...games.map(g=>g.rows.map(r=>r.name))))];
+  state={roster,games}; save(); hidden={}; present={}; initEntry(); renderAnalyses(); toast(`${games.length} manches importées`);
+}
 
-/* init */
-btn.textContent=curTheme()==='dark'?'☀️ Clair':'🌙 Sombre';
-drawRace(); drawWins(); drawStarts(); drawOffset();
+/* ================= THEME / TABS / MISC ================= */
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('btnTheme').textContent=t==='dark'?'☀️':'🌙';
+  renderChips(); renderEntryRows(); renderRecent(); renderAnalyses();}
+function curTheme(){return document.documentElement.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}
+let toastT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+function switchTab(which){
+  document.getElementById('tab-saisie').classList.toggle('on',which==='saisie');
+  document.getElementById('tab-analyses').classList.toggle('on',which==='analyses');
+  document.getElementById('view-saisie').classList.toggle('on',which==='saisie');
+  document.getElementById('view-analyses').classList.toggle('on',which==='analyses');
+  if(which==='analyses')renderAnalyses();
+}
+
+/* ================= WIRING ================= */
+document.getElementById('tab-saisie').onclick=()=>switchTab('saisie');
+document.getElementById('tab-analyses').onclick=()=>switchTab('analyses');
+document.getElementById('btnSave').onclick=saveManche;
+document.getElementById('btnClearWin').onclick=()=>{winner=null;cut=false;renderEntryRows();document.getElementById('entryErr').textContent='';};
+document.getElementById('btnAddPlayer').onclick=()=>{const inp=document.getElementById('newName');const n=inp.value.trim();
+  if(!n)return; if(state.roster.includes(n)){toast('Ce joueur existe déjà');return;}
+  state.roster.push(n); present[n]=true; save(); inp.value=''; reseat(); renderChips(); renderEntryRows(); renderStartHint(); toast(n+' ajouté');};
+document.getElementById('newName').onkeydown=e=>{if(e.key==='Enter')document.getElementById('btnAddPlayer').click();};
+document.getElementById('btnTheme').onclick=()=>setTheme(curTheme()==='dark'?'light':'dark');
+document.getElementById('btnExport').onclick=exportCSV;
+document.getElementById('btnImport').onclick=()=>document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>importCSV(r.result);r.readAsText(f);e.target.value='';};
+document.getElementById('btnReset').onclick=()=>{if(confirm('Réinitialiser aux 23 manches d\'origine ? Les manches ajoutées seront perdues.')){
+  state=seedState();save();hidden={};present={};initEntry();renderAnalyses();toast('Réinitialisé');}};
+document.getElementById('soireeFilter').onchange=renderAnalyses;
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(!document.documentElement.getAttribute('data-theme')){renderChips();renderEntryRows();renderRecent();renderAnalyses();}});
+
+/* ================= INIT ================= */
+document.getElementById('btnTheme').textContent=curTheme()==='dark'?'☀️':'🌙';
+document.getElementById('eyebrow').textContent=`Ligue privée · ${state.roster.length} joueurs · saisie & analyses`;
+document.getElementById('foot').innerHTML='Données stockées sur cet appareil (localStorage). Utilise <b>Exporter CSV</b> pour sauvegarder / partager. Victoire = −10 pts (−20 si dernier pli coupé) · moins de points = mieux.';
+initEntry();
 </script>

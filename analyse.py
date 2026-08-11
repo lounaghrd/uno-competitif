@@ -26,7 +26,9 @@ CSV = Path(__file__).with_name("manches.csv")
 
 
 def charger(path=CSV):
-    """Retourne {manche: [(joueur, siege, score), ...]} trié par manche."""
+    """Retourne {manche: [(joueur, siege, score), ...]} trié par manche.
+
+    La colonne `datetime` est optionnelle (ignorée ici, utilisée par l'app)."""
     manches = defaultdict(list)
     with open(path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
