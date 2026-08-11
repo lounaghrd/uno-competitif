@@ -268,6 +268,13 @@ const PAL_LIGHT=['#2a78d6','#eb6834','#1baf7a','#b98100','#e87ba4','#008300','#4
 const PAL_DARK =['#3987e5','#e8703b','#22c78d','#e0aa2e','#ec8fb2','#22a022','#9085e9','#e66767'];
 const NS="http://www.w3.org/2000/svg";
 const KEY="uno-state-v1";
+
+/* ===== Synchro temps réel (Supabase) — remplir pour activer =====
+   Laisse vide pour rester en mode local (localStorage) : c'est le cas
+   dans l'artifact claude.ai. Sur GitHub Pages, colle l'URL du projet et
+   la clé « anon » publique pour activer la synchro partagée. */
+const SUPA={ url:"", key:"" };
+let supa=null, backend='local';
 const isDark=()=>document.documentElement.getAttribute('data-theme')==='dark'
   || (!document.documentElement.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
 function colorFor(name){const i=Math.max(0,state.roster.indexOf(name)); return (isDark()?PAL_DARK:PAL_LIGHT)[i%8];}
@@ -293,7 +300,42 @@ function seedState(){
 /* ================= STATE ================= */
 let state=load()||seedState();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.games)return s;}catch(e){} return null;}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+  if(backend==='supa'&&supa){
+    supa.from('app_state').upsert({id:1,data:state,updated_at:new Date().toISOString()})
+      .then(({error})=>{ if(error){console.warn('sync',error);toast('Erreur de synchro');} });
+  }
+}
+
+/* ---- Backend Supabase (chargé dynamiquement, seulement si configuré) ---- */
+async function initBackend(){
+  if(!SUPA.url||!SUPA.key) return; // mode local
+  try{
+    const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
+    supa=createClient(SUPA.url,SUPA.key);
+    backend='supa';
+    const {data,error}=await supa.from('app_state').select('data').eq('id',1).maybeSingle();
+    if(error) throw error;
+    if(data&&data.data&&data.data.games){ state=data.data; }
+    else { await supa.from('app_state').upsert({id:1,data:state,updated_at:new Date().toISOString()}); }
+    supa.channel('app_state')
+      .on('postgres_changes',{event:'*',schema:'public',table:'app_state',filter:'id=eq.1'},payload=>{
+        if(payload.new&&payload.new.data&&payload.new.data.games){ state=payload.new.data; onRemoteUpdate(); }
+      }).subscribe();
+    setConnected(true);
+    onRemoteUpdate();
+  }catch(e){ console.warn('Supabase indisponible, mode local',e); backend='local'; setConnected(false); }
+}
+function setConnected(ok){
+  const eb=document.getElementById('eyebrow');
+  eb.textContent=`Ligue privée · ${state.roster.length} joueurs · ${ok?'synchro live ✓':'saisie & analyses'}`;
+}
+function onRemoteUpdate(){
+  // met à jour l'affichage sans écraser une saisie en cours
+  setConnected(true);
+  renderChips(); renderStartHint(); renderRecent(); renderAnalyses();
+}
 
 /* ================= COMPUTE ================= */
 function activeGames(){ // filtre soirée
@@ -663,6 +705,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(!do
 /* ================= INIT ================= */
 document.getElementById('btnTheme').textContent=curTheme()==='dark'?'☀️':'🌙';
 document.getElementById('eyebrow').textContent=`Ligue privée · ${state.roster.length} joueurs · saisie & analyses`;
-document.getElementById('foot').innerHTML='Données stockées sur cet appareil (localStorage). Utilise <b>Exporter CSV</b> pour sauvegarder / partager. Victoire = −10 pts (−20 si dernier pli coupé) · moins de points = mieux.';
+document.getElementById('foot').innerHTML='Victoire = −10 pts (−20 si dernier pli coupé) · moins de points = mieux. En mode local, les données restent sur cet appareil — <b>Exporter CSV</b> pour sauvegarder ; en mode synchro, tout le monde partage les mêmes données en direct.';
 initEntry();
+initBackend();
 </script>

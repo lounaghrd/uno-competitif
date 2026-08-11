@@ -9,9 +9,10 @@ gagnée en coupant le dernier pli). Le but est d'avoir le **moins** de points.
 
 | Fichier | Rôle |
 |---|---|
-| `index.html` | Tableau de bord interactif (classement, profils, course, thème clair/sombre) |
+| `index.html` | **L'application** : saisie interactive + analyses en live (local ou synchro Supabase) |
 | `manches.csv` | Les données brutes au format long — une ligne par (manche, joueur) |
 | `analyse.py` | Script d'analyse (aucune dépendance, `python3 analyse.py`) |
+| `supabase-schema.sql` | Schéma SQL à exécuter une fois pour activer la synchro temps réel |
 
 Le CSV et le script s'adaptent tout seuls quand on **passera à 7 joueurs** ou
 qu'on ajoutera des manches : il suffit d'ajouter des lignes.
@@ -76,3 +77,34 @@ manche,joueur,siege,score
 1,Louna,2,46
 ...
 ```
+
+## Synchro temps réel (Supabase + GitHub Pages)
+
+Par défaut l'app fonctionne en **local** (données dans le navigateur, export/import
+CSV pour partager). Pour que **tout le monde saisisse et voie le classement en
+direct**, on la branche sur Supabase (gratuit) et on l'héberge sur GitHub Pages.
+
+**Mise en place (une seule fois) :**
+
+1. Créer un projet sur [supabase.com](https://supabase.com) (gratuit).
+2. Dans **SQL Editor**, coller le contenu de `supabase-schema.sql` puis **Run**.
+3. Dans **Project Settings → API**, copier :
+   - la **Project URL** (ex. `https://xxxx.supabase.co`) ;
+   - la clé **anon public**.
+4. Les reporter dans `index.html`, tout en haut du script :
+   ```js
+   const SUPA={ url:"https://xxxx.supabase.co", key:"votre-clé-anon" };
+   ```
+5. **Activer GitHub Pages** : Repo → **Settings → Pages** → Source = cette branche,
+   dossier `/ (root)`. L'app est servie à l'URL indiquée par GitHub.
+
+À l'ouverture, l'app charge l'état partagé, sème les 23 manches d'origine si la
+base est vide, et **se met à jour en direct** chez tout le monde à chaque manche.
+
+**Note de sécurité :** l'accès se fait avec la clé *anon* (publique) et des règles
+ouvertes — parfait pour une petite ligue privée. Ne partagez pas l'URL du site
+publiquement ; on pourra ajouter un mot de passe partagé si besoin.
+
+**Concurrence :** l'état est une seule ligne JSON (« dernier qui écrit gagne »).
+Si deux personnes enregistrent exactement au même instant, une manche pourrait
+être écrasée — négligeable quand on saisit à tour de rôle.
