@@ -14,30 +14,24 @@ gagnée en coupant le dernier pli). Le but est d'avoir le **moins** de points.
 | `analyse.py` | Script d'analyse (aucune dépendance, `python3 analyse.py`) |
 | `supabase-schema.sql` | Schéma SQL à exécuter une fois pour activer la synchro temps réel |
 
-Le CSV et le script s'adaptent tout seuls quand on **passera à 7 joueurs** ou
-qu'on ajoutera des manches : il suffit d'ajouter des lignes.
+Le CSV et le script s'adaptent tout seuls à l'**effectif variable** (Tom est
+arrivé à la manche 24, Nicolas est attendu en 7ᵉ) : il suffit d'ajouter des lignes.
 
-## Classement après 23 manches
+## Classement après 66 manches (5 soirées, 11 → 15/08/2026)
 
-| # | Joueur | Total | Victoires |
-|---|--------|------:|:---------:|
-| 1 | **Louna** | 330 | 6 |
-| 2 | Justin | 368 | 6 *(dont 1×−20)* |
-| 3 | Andy | 401 | 5 |
-| 4 | Nathan | 483 | 1 |
-| 5 | Julia | 496 | 5 |
+| # | Joueur | Total | Moy./manche | Manches | Victoires |
+|---|--------|------:|:-----------:|:-------:|:---------:|
+| 1 | **Tom** | 827 | 19,2 | 43 | 7 *(3×−20)* |
+| 2 | Andy | 1268 | 19,2 | 66 | 13 |
+| 3 | Louna | 1284 | 19,5 | 66 | 14 *(1×−20)* |
+| 4 | Julia | 1422 | 21,5 | 66 | 13 *(3×−20)* |
+| 5 | Nathan | 1471 | 22,3 | 66 | 7 |
+| 6 | Justin | 1626 | 24,6 | 66 | 12 *(3×−20)* |
 
-## Ce que disent les chiffres
-
-- **Gagner ne suffit pas — il faut éviter d'exploser.** Julia a autant de
-  victoires qu'Andy (5) mais finit **dernière** : ses manches perdues coûtent en
-  moyenne 30 pts, avec des cartons à 91 et 102. À l'inverse **Nathan n'a gagné
-  qu'une manche** et termine 4ᵉ (pas dernier) grâce à la moyenne en défaite la
-  plus basse du groupe (22,4).
-- **Louna gagne le duel de la régularité.** 6 victoires *et* la plus faible
-  moyenne par manche : elle marque des points sans jamais s'effondrer.
-- **Justin est le joueur le plus explosif** : seul −20 de la saison, mais aussi
-  la pire manche notée (123 pts) et une des plus fortes volatilités.
+> ⚠️ **Attention aux totaux :** Tom mène au total mais n'a joué que **43 manches
+> sur 66** — le score « golf » avantage mécaniquement qui joue moins. À la
+> **moyenne par manche**, Tom et Andy sont au coude-à-coude (19,2), et Justin
+> reste le plus en difficulté (24,6).
 
 ## La position de jeu
 
@@ -51,14 +45,15 @@ l'**écart, dans le sens horaire, par rapport à celui qui commence**.
 
 Ce qu'on observe pour l'instant :
 
-- **Ouvrir n'aide pas à gagner.** Comme il était presque toujours dernier,
-  **Nathan a ouvert 16 manches sur 23** — et n'en a gagné qu'une.
-- Le score moyen par position relative est calculé (`analyse.py`), mais il reste
-  **à interpréter avec prudence** : la configuration a très peu varié et un seul
-  joueur a ouvert la plupart des manches, donc l'effet « position » est encore
-  **confondu avec l'identité des joueurs**.
+- **Ouvrir n'aide pas à gagner.** Le dernier au cumul ouvre la manche ; sur les
+  66 manches, c'est **Julia qui a le plus ouvert (33 fois)**, sans que ça la
+  fasse remonter.
+- Les places **varient enfin** (8 configurations distinctes) : le score moyen par
+  position relative (`analyse.py`) devient plus lisible, mais l'échantillon par
+  position reste **modeste** — à interpréter avec prudence tant qu'on n'a pas
+  plus de manches avec des places bien mélangées.
 
-**Pour rendre la position vraiment analysable :**
+**Pour rendre la position pleinement analysable :**
 1. **Changer les places à chaque manche** (tirage au sort) — chaque joueur
    occupera alors chaque position relative un nombre comparable de fois.
 2. Continuer à noter le **siège de chacun par manche** (déjà en place) et le

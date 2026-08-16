@@ -4,8 +4,10 @@ Réponses en **français**. Dépôt git `lounaghrd/uno-competitif`.
 
 ## Le jeu et ses règles (à retenir)
 
-- On joue au « **UNO compétitif** » entre amis. Actuellement **5 joueurs**
-  (Nathan, Louna, Julia, Justin, Andy) ; on passera à **7** plus tard.
+- On joue au « **UNO compétitif** » entre amis. **6 joueurs** jouent désormais
+  (Nathan, Louna, Andy, Julia, Justin, et **Tom** depuis la manche 24) ;
+  **Nicolas** est attendu comme 7ᵉ (pas encore de manche jouée). L'effectif
+  varie d'une manche à l'autre : tout le monde n'est pas toujours présent.
 - **But** : avoir le **MOINS** de points possible sur l'ensemble des manches
   (score « de golf »).
 - **Score d'une manche** :
@@ -22,8 +24,9 @@ Réponses en **français**. Dépôt git `lounaghrd/uno-competitif`.
   plus de points) juste avant la manche — mécanique de **rattrapage**. Se
   **déduit** des scores cumulés : inutile de le noter.
 - **Date/heure** : chaque manche a une date et une heure. Les **23 premières
-  manches** ont eu lieu le **11/08/2026 à 15h00**. D'autres métadonnées
-  (nombre de joueurs présents, donneur, lieu…) pourront s'ajouter plus tard.
+  manches** ont eu lieu le **11/08/2026 à 15h00** ; les données couvrent
+  désormais **66 manches sur 5 soirées** (11 → 15/08/2026). D'autres
+  métadonnées (donneur, lieu…) pourront s'ajouter plus tard.
 
 ## Données & outils
 
@@ -38,6 +41,9 @@ Réponses en **français**. Dépôt git `lounaghrd/uno-competitif`.
 
 ## Rappels d'analyse
 
-- La position ne pourra être analysée proprement que lorsque les **places
-  varieront** (tirage au sort) : sinon l'effet position reste confondu avec
-  l'identité des joueurs.
+- Les **places varient enfin** (8 configurations sur 66 manches) : l'effet
+  position commence à être analysable, mais l'échantillon par position reste
+  modeste — à confirmer avec plus de manches.
+- **Effectif variable** : quand un joueur a disputé moins de manches (ex. Tom,
+  arrivé à la 24ᵉ), le **total « golf » l'avantage** mécaniquement. Pour
+  comparer équitablement, regarder la **moyenne par manche**, pas le total.
