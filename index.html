@@ -190,12 +190,7 @@
   <div class="view on" id="view-saisie">
     <div class="panel">
       <h3>Nouvelle manche</h3>
-      <p class="mini">Coche les joueurs présents, ajuste les sièges si besoin, désigne le vainqueur, saisis les points. Le vainqueur est mis à −10 (ou −20 s'il a coupé le dernier pli).</p>
-
-      <div class="field" style="max-width:260px">
-        <label for="dt">Date & heure</label>
-        <input type="datetime-local" id="dt">
-      </div>
+      <p class="mini">Coche les joueurs présents, ajuste les sièges si besoin, désigne le vainqueur, saisis les points. Le vainqueur est mis à −10 (ou −20 s'il a coupé le dernier pli). L'horodatage est ajouté automatiquement à l'enregistrement.</p>
 
       <div class="field">
         <label>Joueurs présents</label>
@@ -392,10 +387,11 @@ function compute(games){
 
 /* ================= RENDER: SAISIE ================= */
 let present={}, seats={}, winner=null, cut=false;
+function nowLocal(){ // horodatage local 'YYYY-MM-DDTHH:MM'
+  const d=new Date(), p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 function initEntry(){
-  const dt=document.getElementById('dt');
-  if(!dt.value){ const last=state.games.length?state.games[state.games.length-1].dt:null;
-    dt.value=last||new Date().toISOString().slice(0,16);}
   state.roster.forEach(n=>{ if(!(n in present)) present[n]=true; });
   reseat(); renderChips(); renderEntryRows(); renderStartHint(); renderRecent();
 }
@@ -479,11 +475,9 @@ function saveManche(){
     }
     rows.push({name:n, siege:seats[n], score:sc});
   }
-  const dt=document.getElementById('dt').value||'';
-  state.games.push({dt, rows});
+  state.games.push({dt:nowLocal(), rows}); // horodatage automatique au submit
   save();
   winner=null; cut=false;
-  const inp=document.getElementById('dt'); // garde la date
   initEntry(); renderAnalyses();
   toast('Manche m'+state.games.length+' enregistrée ✓');
 }
