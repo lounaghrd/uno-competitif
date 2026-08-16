@@ -95,8 +95,10 @@ direct**, on la branche sur Supabase (gratuit) et on l'héberge sur GitHub Pages
    ```js
    const SUPA={ url:"https://xxxx.supabase.co", key:"votre-clé-anon" };
    ```
-5. **Activer GitHub Pages** : Repo → **Settings → Pages** → Source = cette branche,
-   dossier `/ (root)`. L'app est servie à l'URL indiquée par GitHub.
+5. **Héberger sur Vercel** : sur [vercel.com](https://vercel.com), *Add New → Project*,
+   importer ce dépôt. Framework = **Other**, aucune commande de build (le
+   `vercel.json` sert le dépôt tel quel). Chaque push crée un déploiement ;
+   Vercel fournit l'URL du site.
 
 À l'ouverture, l'app charge l'état partagé, sème les 23 manches d'origine si la
 base est vide, et **se met à jour en direct** chez tout le monde à chaque manche.
