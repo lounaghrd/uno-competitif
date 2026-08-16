@@ -340,7 +340,9 @@ function compute(games){
   const byOffset={}, startsCount={}; roster.forEach(n=>startsCount[n]=0);
   games.forEach((g,gi)=>{
     const present=g.rows.map(r=>r.name);
-    // qui commence : dernier au cumul avant, parmi présents
+    // moyenne de la manche (sur les présents) — attribuée aux absents
+    const mAvg=g.rows.reduce((a,r)=>a+r.score,0)/g.rows.length;
+    // qui commence : dernier au cumul (imputé) avant, parmi présents
     let starter=null, mx=-Infinity, tie=false;
     present.forEach(n=>{const c=cumBefore[n]; if(c>mx){mx=c; starter=n; tie=false;} else if(c===mx){tie=true;}});
     if(tie||gi===0) starter=null;
@@ -356,19 +358,21 @@ function compute(games){
         (byOffset[off]=byOffset[off]||[]).push(r.score);
       }
     });
-    // cumul (hold flat si absent) + maj cumBefore
+    // cumul imputé : présent → score réel ; absent → moyenne de la manche.
+    // On somme en flottant ; l'arrondi supérieur ne se fait qu'à l'affichage.
     roster.forEach(nm=>{
       const row=g.rows.find(r=>r.name===nm);
-      const prev=cum[nm][cum[nm].length-1];
-      cum[nm].push(row?prev+row.score:prev);
+      const contrib=row?row.score:mAvg;
+      cum[nm].push(cum[nm][cum[nm].length-1]+contrib);
+      cumBefore[nm]+=contrib;
     });
-    g.rows.forEach(r=>cumBefore[r.name]+=r.score);
   });
   // stats finales
   roster.forEach(n=>{
     const s=prof[n].scores, def=s.filter(x=>x>=0), m=s.reduce((a,b)=>a+b,0)/s.length;
-    prof[n].total=s.reduce((a,b)=>a+b,0);
-    prof[n].moy=m;
+    prof[n].total=Math.ceil(cum[n][cum[n].length-1]); // somme (réels + moyennes) PUIS arrondi supérieur
+    prof[n].played=s.length;
+    prof[n].moy=m; // moyenne réelle, sur les manches effectivement jouées
     prof[n].victoires=wins[n];
     prof[n].coupes=s.filter(x=>x===-20).length;
     prof[n].moyDef=def.length?def.reduce((a,b)=>a+b,0)/def.length:0;
@@ -428,7 +432,7 @@ function renderStartHint(){
   if(!list.length){el.innerHTML='Sélectionne au moins un joueur.'; return;}
   el.innerHTML = (tie||!state.games.length)
     ? `<b>Qui commence :</b> égalité au classement (ou 1re manche) — à vous de décider.`
-    : `<b>${s}</b> commence cette manche (dernier au classement cumulé, ${mx} pts).`;
+    : `<b>${s}</b> commence cette manche (dernier au classement cumulé, ${Math.ceil(mx)} pts).`;
 }
 function renderRecent(){
   const box=document.getElementById('recentList');
@@ -500,14 +504,14 @@ function renderAnalyses(){
 function renderBoard(C){
   const ranked=[...C.roster].sort((a,b)=>C.prof[a].total-C.prof[b].total);
   const maxT=Math.max(...ranked.map(n=>C.prof[n].total),1);
-  const uneq=new Set(ranked.map(n=>C.prof[n].scores.length)).size>1;
-  const note=uneq?`<div class="caveat" style="margin:0 0 12px"><b>ℹ</b><span>Tous n'ont pas joué le même nombre de manches — le total « golf » avantage ceux qui en ont joué moins. Compare aussi la <b>Moy./manche</b> (profils).</span></div>`:'';
+  const uneq=new Set(ranked.map(n=>C.prof[n].played)).size>1;
+  const note=uneq?`<div class="caveat" style="margin:0 0 12px;color:var(--ink-2)"><b style="color:var(--ink-3)">ℹ</b><span>Les manches non jouées sont comptées au <b>score moyen de la manche</b> : les totaux couvrent les ${C.nGames} manches et restent comparables (cumul = somme arrondie au supérieur).</span></div>`:'';
   document.getElementById('board').innerHTML=note+ranked.map((n,i)=>{
     const p=C.prof[n];
     return `<div class="row ${i===0?'lead':''}" style="--pc:${colorFor(n)}">
       <div class="rank">${i+1}</div>
       <div class="who"><span class="nm"><span class="dot"></span>${n}</span>
-        <span class="tag">${p.victoires} victoire${p.victoires>1?'s':''}${p.coupes?` · ${p.coupes}×−20`:''} · ${p.scores.length} manches</span></div>
+        <span class="tag">${p.victoires} victoire${p.victoires>1?'s':''}${p.coupes?` · ${p.coupes}×−20`:''} · ${p.played} jouées${p.played<C.nGames?` (+${C.nGames-p.played} moy.)`:''}</span></div>
       <div class="tot"><div class="big num">${p.total}</div><div class="lbl">points</div></div>
       <div class="gapbar"><i style="width:${Math.max(0,p.total/maxT*100).toFixed(1)}%"></i></div></div>`;
   }).join('');
@@ -574,7 +578,7 @@ function renderRace(C){
     const rows=C.roster.filter(n=>!hidden[n]).map(n=>({n,v:C.cum[n][i]})).sort((a,b)=>a.v-b.v);
     svg.querySelectorAll('.tipdot').forEach(d=>{const n=d.dataset.n;d.setAttribute("cx",X(i));d.setAttribute("cy",Y(C.cum[n][i]));d.style.opacity=1;});
     tip.innerHTML=`<div class="th">${i===0?'Début':'Après m.'+i}</div>`+rows.map(({n,v})=>
-      `<div class="tr"><span class="nm"><span class="sw" style="background:${colorFor(n)}"></span>${n}</span><span class="vv">${v}</span></div>`).join('');
+      `<div class="tr"><span class="nm"><span class="sw" style="background:${colorFor(n)}"></span>${n}</span><span class="vv">${Math.ceil(v)}</span></div>`).join('');
     tip.style.opacity=1;const px=X(i)/R.w*bb.width;tip.style.left=Math.min(px+14,bb.width-tip.offsetWidth-4)+"px";tip.style.top="8px";};
   svg.onmouseleave=()=>{tip.style.opacity=0;const c=document.getElementById('cross');if(c)c.style.opacity=0;
     svg.querySelectorAll('.tipdot').forEach(d=>d.style.opacity=0);};

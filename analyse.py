@@ -18,6 +18,7 @@ Le script s'adapte au nombre de joueurs et de manches, et à des manches où
 tout le monde n'est pas présent.
 """
 import csv
+import math
 import statistics as st
 from collections import defaultdict
 from pathlib import Path
@@ -39,30 +40,43 @@ def charger(path=CSV):
 
 
 def profils(manches):
+    """Profil de chaque joueur. Les statistiques de performance (moy,
+    victoires, volatilité…) portent sur les manches réellement jouées.
+    En revanche le **total** applique l'imputation : un joueur absent d'une
+    manche reçoit le score moyen de cette manche, et le cumul est la SOMME
+    de ces contributions, arrondie au supérieur (arrondi à la fin)."""
+    roster = {nom for m in manches.values() for nom, _, _ in m}
     scores = defaultdict(list)
+    impute = defaultdict(float)  # somme imputée (flottant)
     for m in manches.values():
+        moyenne = sum(sc for _, _, sc in m) / len(m)
+        joues = {nom: sc for nom, _, sc in m}
         for nom, _, sc in m:
             scores[nom].append(sc)
+        for nom in roster:
+            impute[nom] += joues.get(nom, moyenne)
     out = {}
-    for nom, m in scores.items():
-        defaites = [x for x in m if x >= 0]
+    for nom in roster:
+        s = scores[nom]
+        defaites = [x for x in s if x >= 0]
         out[nom] = {
-            "total": sum(m),
-            "moy": sum(m) / len(m),
-            "victoires": sum(1 for x in m if x < 0),
-            "coupes": sum(1 for x in m if x == -20),
+            "total": math.ceil(impute[nom]),
+            "moy": sum(s) / len(s),
+            "victoires": sum(1 for x in s if x < 0),
+            "coupes": sum(1 for x in s if x == -20),
             "moy_defaite": st.mean(defaites) if defaites else 0.0,
-            "volatilite": st.pstdev(m) if len(m) > 1 else 0.0,
-            "pire": max(m),
-            "manches": len(m),
+            "volatilite": st.pstdev(s) if len(s) > 1 else 0.0,
+            "pire": max(s),
+            "manches": len(s),
         }
     return out
 
 
 def qui_commence(manches):
     """Déduit le joueur qui commence chaque manche : le dernier au cumul
-    (parmi les présents). Retourne {manche: joueur ou None si égalité}."""
-    cumul = defaultdict(int)
+    (imputé) parmi les présents. Retourne {manche: joueur ou None si égalité}."""
+    roster = {nom for m in manches.values() for nom, _, _ in m}
+    cumul = defaultdict(float)
     starters = {}
     for k, m in manches.items():
         presents = [nom for nom, _, _ in m]
@@ -70,8 +84,10 @@ def qui_commence(manches):
         pire = max(avant.values())
         derniers = [nom for nom in presents if avant[nom] == pire]
         starters[k] = derniers[0] if len(derniers) == 1 else None
-        for nom, _, sc in m:
-            cumul[nom] += sc
+        moyenne = sum(sc for _, _, sc in m) / len(m)
+        joues = {nom: sc for nom, _, sc in m}
+        for nom in roster:
+            cumul[nom] += joues.get(nom, moyenne)
     return starters
 
 
@@ -100,10 +116,13 @@ def afficher(manches):
     nb_manches = len(manches)
 
     print(f"\n=== Classement ({nb_manches} manches) — moins = mieux ===")
+    print("    (total imputé : les manches non jouées comptent au score moyen "
+          "de la manche,\n     cumul = somme arrondie au supérieur)")
     for rang, (nom, v) in enumerate(classement, 1):
         coupe = f", dont {v['coupes']}x-20" if v["coupes"] else ""
-        print(f"  {rang}. {nom:8} {v['total']:4} pts   "
-              f"({v['victoires']} victoires{coupe})")
+        imp = f", {nb_manches - v['manches']} au score moyen" if v['manches'] < nb_manches else ""
+        print(f"  {rang}. {nom:8} {v['total']:5} pts   "
+              f"({v['victoires']} victoires{coupe} · {v['manches']} jouées{imp})")
 
     print("\n=== Profils (triés par total) ===")
     print(f"{'Joueur':8} | {'Moy':>5} | {'Vict':>4} | "
@@ -134,10 +153,12 @@ def afficher(manches):
         v = par_offset[o]
         vic = sum(1 for x in v if x < 0)
         print(f"    {o}    | {len(v):3} | {st.mean(v):6.1f}      | {vic}")
-    print("  ⚠ Interprétation prudente : la config a très peu varié et un seul "
-          "joueur\n    a commencé la plupart des manches → l'effet position reste "
-          "confondu\n    avec l'identité des joueurs. Variez les places pour "
-          "lever l'ambiguïté.")
+    nconf = len({tuple(sorted((nom, sg) for nom, sg, _ in m))
+                 for m in manches.values()})
+    print(f"  ⚠ Interprétation prudente : {nconf} configurations de sièges, mais "
+          "l'échantillon\n    par position reste modeste et un joueur ouvre encore "
+          "une bonne part des\n    manches — à confirmer avec des places bien "
+          "mélangées.")
 
 
 if __name__ == "__main__":

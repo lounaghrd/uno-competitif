@@ -19,19 +19,31 @@ arrivé à la manche 24, Nicolas est attendu en 7ᵉ) : il suffit d'ajouter des 
 
 ## Classement après 66 manches (5 soirées, 11 → 15/08/2026)
 
-| # | Joueur | Total | Moy./manche | Manches | Victoires |
-|---|--------|------:|:-----------:|:-------:|:---------:|
-| 1 | **Tom** | 827 | 19,2 | 43 | 7 *(3×−20)* |
+Total **imputé** : un joueur absent d'une manche reçoit le **score moyen de la
+manche**, et le cumul est la **somme arrondie au supérieur** (voir plus bas).
+Les totaux couvrent donc les 66 manches et sont comparables.
+
+| # | Joueur | Total | Moy./manche jouée | Jouées | Victoires |
+|---|--------|------:|:-----------------:|:------:|:---------:|
+| 1 | **Tom** | 1243 | 19,2 | 43 *(+23 moy.)* | 7 *(3×−20)* |
 | 2 | Andy | 1268 | 19,2 | 66 | 13 |
 | 3 | Louna | 1284 | 19,5 | 66 | 14 *(1×−20)* |
 | 4 | Julia | 1422 | 21,5 | 66 | 13 *(3×−20)* |
 | 5 | Nathan | 1471 | 22,3 | 66 | 7 |
 | 6 | Justin | 1626 | 24,6 | 66 | 12 *(3×−20)* |
 
-> ⚠️ **Attention aux totaux :** Tom mène au total mais n'a joué que **43 manches
-> sur 66** — le score « golf » avantage mécaniquement qui joue moins. À la
-> **moyenne par manche**, Tom et Andy sont au coude-à-coude (19,2), et Justin
-> reste le plus en difficulté (24,6).
+## Imputation des manches non jouées
+
+- **Un joueur absent** d'une manche reçoit le **score moyen de cette manche**
+  (moyenne des présents, gagnant compris).
+- Le **score cumulé** = **somme** de toutes les contributions (réelles + moyennes),
+  **arrondie au supérieur** — on additionne d'abord, on arrondit à la fin.
+- Vaut aussi pour les manches **avant l'arrivée** d'un joueur (Tom reçoit la
+  moyenne des manches 1→23, d'où 827 bruts → **1243** comparables).
+- Un joueur qui n'a **jamais** joué (Nicolas) est **exclu** tant qu'il n'a pas
+  disputé de manche.
+- Les stats de performance (moyenne, victoires, volatilité…) restent calculées
+  sur les manches **réellement jouées**.
 
 ## La position de jeu
 

@@ -15,6 +15,17 @@ Réponses en **français**. Dépôt git `lounaghrd/uno-competitif`.
   - s'il gagne en **coupant le dernier pli**, il marque **−20** ;
   - les autres marquent la valeur (positive) des cartes restées en main ;
   - il y a exactement **un vainqueur** par manche (le seul score négatif).
+- **Absents / effectif variable** : un joueur **non présent** à une manche se voit
+  attribuer le **score moyen de la manche** (moyenne des scores des présents,
+  gagnant compris). Le **score cumulé** est la **somme** de toutes les
+  contributions (scores réels + moyens), **arrondie au supérieur** — on additionne
+  d'abord, on arrondit à la fin (jamais manche par manche). Ainsi les totaux
+  couvrent toutes les manches et restent comparables même à effectif variable.
+  L'imputation vaut aussi pour les manches **antérieures à l'arrivée** d'un joueur
+  (ex. Tom reçoit la moyenne des manches 1→23). Un joueur qui n'a **jamais** joué
+  (0 manche, ex. Nicolas) est **exclu** tant qu'il n'a pas disputé une manche.
+  Les stats de performance (moyenne, victoires, volatilité…) restent, elles,
+  calculées sur les manches **réellement jouées**.
 - **Sièges / placement** : les numéros (1, 2, …, n) sont des **étiquettes
   cycliques** qui disent seulement **qui est à côté de qui** (… → n → 1 → …).
   Ce **n'est pas** l'ordre de jeu ; seul l'agencement **relatif** compte.
@@ -44,6 +55,7 @@ Réponses en **français**. Dépôt git `lounaghrd/uno-competitif`.
 - Les **places varient enfin** (8 configurations sur 66 manches) : l'effet
   position commence à être analysable, mais l'échantillon par position reste
   modeste — à confirmer avec plus de manches.
-- **Effectif variable** : quand un joueur a disputé moins de manches (ex. Tom,
-  arrivé à la 24ᵉ), le **total « golf » l'avantage** mécaniquement. Pour
-  comparer équitablement, regarder la **moyenne par manche**, pas le total.
+- **Effectif variable** : le total est rendu comparable par l'**imputation du
+  score moyen** aux manches non jouées (voir règles). Avec ça, Tom (43 manches
+  jouées) obtient un total sur 66 (~1243) au coude-à-coude avec Andy/Louna,
+  au lieu des 827 bruts qui l'avantageaient à tort.
