@@ -39,28 +39,53 @@ def charger(path=CSV):
     return dict(sorted(manches.items()))
 
 
-def profils(manches):
-    """Profil de chaque joueur. Les statistiques de performance (moy,
-    victoires, volatilité…) portent sur les manches réellement jouées.
-    En revanche le **total** applique l'imputation : un joueur absent d'une
-    manche reçoit le score moyen de cette manche, et le cumul est la SOMME
-    de ces contributions, arrondie au supérieur (arrondi à la fin)."""
+def parcours(manches):
+    """Parcourt les manches dans l'ordre et calcule tout le cumul.
+
+    Règles appliquées :
+    - **imputation** : un joueur absent reçoit le score moyen de la manche ;
+    - **cumul** = somme des contributions, arrondie au supérieur à l'affichage ;
+    - **règle des −200** : dès que le cumul (arrondi au supérieur) d'un joueur
+      vaut EXACTEMENT un multiple de 200, il perd 200 points d'un coup.
+      Se base sur le cumul total (imputations comprises), et ne se déclenche
+      qu'une fois par manche (pas de cascade).
+
+    Retourne (roster, net, played, malus, starters) où `net` est le cumul net
+    final (flottant) et `malus` le nombre de −200 subis par joueur.
+    """
     roster = {nom for m in manches.values() for nom, _, _ in m}
-    scores = defaultdict(list)
-    impute = defaultdict(float)  # somme imputée (flottant)
-    for m in manches.values():
+    net = {nom: 0.0 for nom in roster}   # cumul net courant (malus inclus)
+    played = defaultdict(list)
+    malus = defaultdict(int)
+    starters = {}
+    for k, m in manches.items():
+        present = [nom for nom, _, _ in m]
+        # qui commence : dernier au cumul net avant, parmi les présents
+        avant = {nom: net[nom] for nom in present}
+        pire = max(avant.values())
+        derniers = [nom for nom in present if avant[nom] == pire]
+        starters[k] = derniers[0] if len(derniers) == 1 else None
         moyenne = sum(sc for _, _, sc in m) / len(m)
         joues = {nom: sc for nom, _, sc in m}
         for nom, _, sc in m:
-            scores[nom].append(sc)
+            played[nom].append(sc)
         for nom in roster:
-            impute[nom] += joues.get(nom, moyenne)
+            net[nom] += joues.get(nom, moyenne)
+            disp = math.ceil(net[nom])
+            if disp > 0 and disp % 200 == 0:   # pile sur un multiple de 200
+                net[nom] -= 200
+                malus[nom] += 1
+    return roster, net, played, malus, starters
+
+
+def profils_depuis(roster, net, played, malus):
+    """Construit les stats par joueur (total imputé/malus + perf sur le jeu réel)."""
     out = {}
     for nom in roster:
-        s = scores[nom]
+        s = played[nom]
         defaites = [x for x in s if x >= 0]
         out[nom] = {
-            "total": math.ceil(impute[nom]),
+            "total": math.ceil(net[nom]),
             "moy": sum(s) / len(s),
             "victoires": sum(1 for x in s if x < 0),
             "coupes": sum(1 for x in s if x == -20),
@@ -68,27 +93,9 @@ def profils(manches):
             "volatilite": st.pstdev(s) if len(s) > 1 else 0.0,
             "pire": max(s),
             "manches": len(s),
+            "malus": malus[nom],
         }
     return out
-
-
-def qui_commence(manches):
-    """Déduit le joueur qui commence chaque manche : le dernier au cumul
-    (imputé) parmi les présents. Retourne {manche: joueur ou None si égalité}."""
-    roster = {nom for m in manches.values() for nom, _, _ in m}
-    cumul = defaultdict(float)
-    starters = {}
-    for k, m in manches.items():
-        presents = [nom for nom, _, _ in m]
-        avant = {nom: cumul[nom] for nom in presents}
-        pire = max(avant.values())
-        derniers = [nom for nom in presents if avant[nom] == pire]
-        starters[k] = derniers[0] if len(derniers) == 1 else None
-        moyenne = sum(sc for _, _, sc in m) / len(m)
-        joues = {nom: sc for nom, _, sc in m}
-        for nom in roster:
-            cumul[nom] += joues.get(nom, moyenne)
-    return starters
 
 
 def analyse_position(manches, starters):
@@ -111,18 +118,19 @@ def analyse_position(manches, starters):
 
 
 def afficher(manches):
-    p = profils(manches)
+    roster, net, played, malus, starters = parcours(manches)
+    p = profils_depuis(roster, net, played, malus)
     classement = sorted(p.items(), key=lambda kv: kv[1]["total"])
     nb_manches = len(manches)
 
     print(f"\n=== Classement ({nb_manches} manches) — moins = mieux ===")
-    print("    (total imputé : les manches non jouées comptent au score moyen "
-          "de la manche,\n     cumul = somme arrondie au supérieur)")
+    print("    (total imputé ; règle des −200 sur les multiples exacts)")
     for rang, (nom, v) in enumerate(classement, 1):
-        coupe = f", dont {v['coupes']}x-20" if v["coupes"] else ""
+        coupe = f", {v['coupes']}x-20" if v["coupes"] else ""
         imp = f", {nb_manches - v['manches']} au score moyen" if v['manches'] < nb_manches else ""
+        mal = f", {v['malus']}x-200" if v["malus"] else ""
         print(f"  {rang}. {nom:8} {v['total']:5} pts   "
-              f"({v['victoires']} victoires{coupe} · {v['manches']} jouées{imp})")
+              f"({v['victoires']} victoires{coupe} · {v['manches']} jouées{imp}{mal})")
 
     print("\n=== Profils (triés par total) ===")
     print(f"{'Joueur':8} | {'Moy':>5} | {'Vict':>4} | "
@@ -132,7 +140,6 @@ def afficher(manches):
         print(f"{nom:8} | {v['moy']:5.1f} | {v['victoires']:4} | "
               f"{v['moy_defaite']:8.1f} | {v['volatilite']:6.1f} | {v['pire']:4}")
 
-    starters = qui_commence(manches)
     par_offset, par_starter = analyse_position(manches, starters)
 
     print("\n=== Qui commence (dernier au cumul) ===")

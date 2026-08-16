@@ -23,14 +23,14 @@ Total **imputé** : un joueur absent d'une manche reçoit le **score moyen de la
 manche**, et le cumul est la **somme arrondie au supérieur** (voir plus bas).
 Les totaux couvrent donc les 66 manches et sont comparables.
 
-| # | Joueur | Total | Moy./manche jouée | Jouées | Victoires |
-|---|--------|------:|:-----------------:|:------:|:---------:|
-| 1 | **Tom** | 1243 | 19,2 | 43 *(+23 moy.)* | 7 *(3×−20)* |
-| 2 | Andy | 1268 | 19,2 | 66 | 13 |
-| 3 | Louna | 1284 | 19,5 | 66 | 14 *(1×−20)* |
-| 4 | Julia | 1422 | 21,5 | 66 | 13 *(3×−20)* |
-| 5 | Nathan | 1471 | 22,3 | 66 | 7 |
-| 6 | Justin | 1626 | 24,6 | 66 | 12 *(3×−20)* |
+| # | Joueur | Total | Moy./manche jouée | Jouées | Notes |
+|---|--------|------:|:-----------------:|:------:|:------|
+| 1 | **Tom** | 1043 | 19,2 | 43 *(+23 moy.)* | 7 v · 3×−20 · **1×−200** |
+| 2 | Andy | 1268 | 19,2 | 66 | 13 v |
+| 3 | Louna | 1284 | 19,5 | 66 | 14 v · 1×−20 |
+| 4 | Julia | 1422 | 21,5 | 66 | 13 v · 3×−20 |
+| 5 | Nathan | 1471 | 22,3 | 66 | 7 v |
+| 6 | Justin | 1626 | 24,6 | 66 | 12 v · 3×−20 |
 
 ## Imputation des manches non jouées
 
@@ -44,6 +44,14 @@ Les totaux couvrent donc les 66 manches et sont comparables.
   disputé de manche.
 - Les stats de performance (moyenne, victoires, volatilité…) restent calculées
   sur les manches **réellement jouées**.
+
+## Règle des −200 (« pile sur la cible »)
+
+Dès que le **score cumulé** d'un joueur (arrondi au supérieur, imputations
+comprises) vaut **exactement un multiple de 200** (200, 400, 600…), il **perd
+200 points d'un coup**. C'est le fait de *tomber pile* sur le multiple qui compte
+— franchir ne suffit pas — et au plus une fois par manche (pas de cascade). Sur
+les 66 manches, la règle ne s'est déclenchée qu'**une fois** (Tom : 1243 → 1043).
 
 ## La position de jeu
 

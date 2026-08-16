@@ -26,6 +26,12 @@ Réponses en **français**. Dépôt git `lounaghrd/uno-competitif`.
   (0 manche, ex. Nicolas) est **exclu** tant qu'il n'a pas disputé une manche.
   Les stats de performance (moyenne, victoires, volatilité…) restent, elles,
   calculées sur les manches **réellement jouées**.
+- **Règle des −200 (« pile sur la cible »)** : dès que le **score cumulé** d'un
+  joueur (arrondi au supérieur, imputations comprises) vaut **exactement un
+  multiple de 200** (200, 400, 600…), il **perd 200 points d'un coup**. C'est le
+  fait de *tomber pile* sur le multiple qui déclenche la règle — le simple
+  franchissement ne suffit pas. Au plus **une fois par manche** (pas de cascade :
+  400 → −200 → 200 ne redéclenche pas).
 - **Sièges / placement** : les numéros (1, 2, …, n) sont des **étiquettes
   cycliques** qui disent seulement **qui est à côté de qui** (… → n → 1 → …).
   Ce **n'est pas** l'ordre de jeu ; seul l'agencement **relatif** compte.

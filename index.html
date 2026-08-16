@@ -230,7 +230,7 @@
       <span class="fl" id="scopeInfo"></span>
     </div>
 
-    <div class="sec-head"><span class="n">01</span><div><h2>Classement</h2><p class="sec-sub">Total de points — moins = mieux.</p></div></div>
+    <div class="sec-head"><span class="n">01</span><div><h2>Classement</h2><p class="sec-sub">Total de points — moins = mieux. Règle des <strong>−200</strong> : un cumul qui tombe <strong>pile sur un multiple de 200</strong> perd 200 points.</p></div></div>
     <div class="board" id="board"></div>
 
     <div class="sec-head"><span class="n">02</span><div><h2>La course, manche après manche</h2><p class="sec-sub">Points cumulés. La ligne la plus basse est en tête. Survole pour lire les positions.</p></div></div>
@@ -333,8 +333,8 @@ function activeGames(){ // filtre soirée
 function compute(games){
   const roster=[...new Set([].concat(...games.map(g=>g.rows.map(r=>r.name))))]
     .sort((a,b)=>state.roster.indexOf(a)-state.roster.indexOf(b));
-  const prof={}, wins={}, cum={};
-  roster.forEach(n=>{prof[n]={scores:[]}; wins[n]=0; cum[n]=[0];});
+  const prof={}, wins={}, cum={}, malus={};
+  roster.forEach(n=>{prof[n]={scores:[]}; wins[n]=0; cum[n]=[0]; malus[n]=0;});
   const starters=[];
   const cumBefore={}; roster.forEach(n=>cumBefore[n]=0);
   const byOffset={}, startsCount={}; roster.forEach(n=>startsCount[n]=0);
@@ -360,11 +360,16 @@ function compute(games){
     });
     // cumul imputé : présent → score réel ; absent → moyenne de la manche.
     // On somme en flottant ; l'arrondi supérieur ne se fait qu'à l'affichage.
+    // Règle des −200 : si le cumul (arrondi sup) vaut EXACTEMENT un multiple
+    // de 200, le joueur perd 200 d'un coup (une seule fois par manche).
     roster.forEach(nm=>{
       const row=g.rows.find(r=>r.name===nm);
       const contrib=row?row.score:mAvg;
-      cum[nm].push(cum[nm][cum[nm].length-1]+contrib);
-      cumBefore[nm]+=contrib;
+      let v=cum[nm][cum[nm].length-1]+contrib;
+      const disp=Math.ceil(v);
+      if(disp>0 && disp%200===0){ v-=200; malus[nm]++; }
+      cum[nm].push(v);
+      cumBefore[nm]=v;
     });
   });
   // stats finales
@@ -378,9 +383,11 @@ function compute(games){
     prof[n].moyDef=def.length?def.reduce((a,b)=>a+b,0)/def.length:0;
     prof[n].volat=Math.sqrt(s.reduce((a,b)=>a+(b-m)**2,0)/s.length);
     prof[n].pire=Math.max(...s);
+    prof[n].malus=malus[n];
   });
   const nConfigs=new Set(games.map(g=>g.rows.map(r=>r.name+':'+r.siege).sort().join('|'))).size;
-  return {roster, prof, cum, starters, startsCount, byOffset, nGames:games.length, nConfigs};
+  const totalMalus=roster.reduce((a,n)=>a+malus[n],0);
+  return {roster, prof, cum, starters, startsCount, byOffset, nGames:games.length, nConfigs, totalMalus};
 }
 
 /* ================= RENDER: SAISIE ================= */
@@ -511,7 +518,7 @@ function renderBoard(C){
     return `<div class="row ${i===0?'lead':''}" style="--pc:${colorFor(n)}">
       <div class="rank">${i+1}</div>
       <div class="who"><span class="nm"><span class="dot"></span>${n}</span>
-        <span class="tag">${p.victoires} victoire${p.victoires>1?'s':''}${p.coupes?` · ${p.coupes}×−20`:''} · ${p.played} jouées${p.played<C.nGames?` (+${C.nGames-p.played} moy.)`:''}</span></div>
+        <span class="tag">${p.victoires} victoire${p.victoires>1?'s':''}${p.coupes?` · ${p.coupes}×−20`:''}${p.malus?` · ${p.malus}×−200`:''} · ${p.played} jouées${p.played<C.nGames?` (+${C.nGames-p.played} moy.)`:''}</span></div>
       <div class="tot"><div class="big num">${p.total}</div><div class="lbl">points</div></div>
       <div class="gapbar"><i style="width:${Math.max(0,p.total/maxT*100).toFixed(1)}%"></i></div></div>`;
   }).join('');
